@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">LazierDroid</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="campo_nome_serie">Nome da série</string>
+    <string name="botao_pesquisar">Pesquisar</string>
+    <string name="erro_pesquisar_series">Não foi possível recuperar a série pesquisada.</string>
+
+</resources>

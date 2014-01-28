@@ -1,0 +1,87 @@
+#
+# generated on 2014/01/26 12:35:51
+#
+# --table-start--
+dataClass=br.com.pnpa.lazierdroid.entities.Serie
+tableName=series
+# --table-fields-start--
+# --field-start--
+fieldName=id
+id=true
+# --field-end--
+# --field-start--
+fieldName=nome
+canBeNull=false
+# --field-end--
+# --field-start--
+fieldName=link
+# --field-end--
+# --field-start--
+fieldName=anoInicio
+# --field-end--
+# --field-start--
+fieldName=anoFim
+# --field-end--
+# --field-start--
+fieldName=numeroTemporadas
+# --field-end--
+# --field-start--
+fieldName=status
+# --field-end--
+# --field-start--
+fieldName=temporadas
+foreignCollection=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=br.com.pnpa.lazierdroid.entities.Temporada
+tableName=temporadas
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=numero
+canBeNull=false
+# --field-end--
+# --field-start--
+fieldName=episodios
+# --field-end--
+# --field-start--
+fieldName=serie
+columnName=idSerie
+foreign=true
+foreignAutoRefresh=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################
+# --table-start--
+dataClass=br.com.pnpa.lazierdroid.entities.Episodio
+tableName=episodios
+# --table-fields-start--
+# --field-start--
+fieldName=id
+generatedId=true
+# --field-end--
+# --field-start--
+fieldName=date
+# --field-end--
+# --field-start--
+fieldName=link
+# --field-end--
+# --field-start--
+fieldName=title
+# --field-end--
+# --field-start--
+fieldName=temporada
+columnName=idTemporada
+foreign=true
+foreignAutoRefresh=true
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

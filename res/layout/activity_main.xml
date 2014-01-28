@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context=".MainActivity" >
+
+    <EditText
+        android:id="@+id/campo_nome_serie"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/botao_pesquisar_serie"
+        android:ems="10"
+        android:hint="@string/campo_nome_serie" />
+
+    <Button
+        android:id="@+id/botao_pesquisar_serie"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/campo_nome_serie"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/campo_nome_serie"
+        android:text="@string/botao_pesquisar" />
+
+    <ListView
+        android:id="@+id/lista_resultado_pesquisa_series"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/botao_pesquisar_serie"
+        android:layout_below="@+id/campo_nome_serie" >
+
+    </ListView>
+
+</RelativeLayout>
