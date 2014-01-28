@@ -15,6 +15,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -28,15 +29,29 @@ public class SeriePublicService {
 	public static List<Serie> pesquisaSerie(String nomeSerie) throws IllegalStateException, IOException, XmlPullParserException, XPathExpressionException {
 		String url = "http://services.tvrage.com/feeds/search.php?show=" + nomeSerie;
 		InputStream in = downloadFile(url);
-		String expression = "/Results/show";
+		String expression = "/Results";
 		List<Serie> lista = parseSeries(in, expression); 
 		
 		return lista;
 	}
 
 	private static List<Serie> parseSeries(InputStream in, String expression) throws XPathExpressionException, XmlPullParserException, IOException {
+		List<Serie> series = new ArrayList<Serie>();
 		NodeList nodes = xmlParser(in, expression);
-		return null;
+		for(int i=0; i<nodes.getLength(); i++) {
+			Serie serie = parseSerie(nodes.item(i));
+			series.add(serie);
+		}
+		return series;
+	}
+
+	private static Serie parseSerie(Node item) {
+		Serie serie = new Serie();
+		
+//		serie.setNome(item.getn)
+		Log.d(SeriePublicService.class.getCanonicalName(), item.toString());
+		
+		return serie;
 	}
 
 	private static NodeList xmlParser(InputStream in, String xpathExpression)
@@ -64,7 +79,7 @@ public class SeriePublicService {
 		return resp.getEntity().getContent();
 	}
 
-	public List parse(InputStream in) throws XmlPullParserException, IOException {
+	public List<Serie> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);

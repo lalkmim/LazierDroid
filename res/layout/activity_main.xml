@@ -25,7 +25,8 @@
         android:layout_alignBottom="@+id/campo_nome_serie"
         android:layout_alignParentRight="true"
         android:layout_alignTop="@+id/campo_nome_serie"
-        android:text="@string/botao_pesquisar" />
+        android:text="@string/botao_pesquisar" 
+        android:onClick="onClickPesquisarSeries" />
 
     <ListView
         android:id="@+id/lista_resultado_pesquisa_series"
@@ -34,8 +35,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignRight="@+id/botao_pesquisar_serie"
-        android:layout_below="@+id/campo_nome_serie" >
-
-    </ListView>
+        android:layout_below="@+id/campo_nome_serie" />
 
 </RelativeLayout>
