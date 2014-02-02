@@ -35,6 +35,17 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignRight="@+id/botao_pesquisar_serie"
-        android:layout_below="@+id/campo_nome_serie" />
+        android:layout_below="@+id/campo_nome_serie"
+        android:visibility="invisible" />
+
+    <ProgressBar
+        android:id="@+id/spinner_pesquisa_series"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/campo_nome_serie"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
 
 </RelativeLayout>

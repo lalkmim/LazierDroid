@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 public class MainActivity extends BaseActivity {
 
@@ -22,6 +23,8 @@ public class MainActivity extends BaseActivity {
 	
 	public void onClickPesquisarSeries(View v) {
 		EditText campoNomeSerie = (EditText) findViewById(R.id.campo_nome_serie);
+		ProgressBar progressBar = (ProgressBar) findViewById(R.id.spinner_pesquisa_series);
+		progressBar.setVisibility(View.VISIBLE);
 		new SearchTask().execute(campoNomeSerie.getText().toString());
 	}
 }

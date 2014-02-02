@@ -6,7 +6,10 @@ import java.util.List;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.service.DatabaseHelper;
 import br.com.pnpa.lazierdroid.service.SeriePublicService;
@@ -20,28 +23,50 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		int i=0;
 		
 		while(it.hasNext()) {
-			nomesSeries[i++] = it.next().getNome();
+			String nomeSerie = it.next().getNome();
+			nomesSeries[i++] = nomeSerie;
+//			Log.d(BaseActivity.class.getName(), nomeSerie);
 		}
+		
+		Log.d("context", context.toString());
 		
 		return new ArrayAdapter<String>(
 				context, 
-				android.R.layout.simple_list_item_multiple_choice,
+				android.R.layout.simple_list_item_1,
 				nomesSeries);
 	}
 	
 	protected class SearchTask extends AsyncTask<String, Void, Void> {
+		List<Serie> lista = null;
+		
 		@Override
 		protected Void doInBackground(String... nomeSerie) {
 			try {
-//				Button botaoPesquisar = (Button) findViewById(R.id.botao_pesquisar_serie);	
-//				ListView listaSeries = (ListView) findViewById(R.id.lista_resultado_pesquisa_series);
-
-				List<Serie> lista = SeriePublicService.pesquisaSerie(nomeSerie[0]);
-				Log.d(this.getClass().getCanonicalName(), lista.toString());
+				lista = SeriePublicService.pesquisaSerie(nomeSerie[0]);
+//				Log.d(this.getClass().getName(), lista.toString());
 			} catch (Exception e) {
-				Log.e(this.getClass().getCanonicalName(), getString(R.string.erro_pesquisar_series), e);
+				Log.e(this.getClass().getName(), getString(R.string.erro_pesquisar_series), e);
 			}
 			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			try {
+				Log.d("teste", "teste");
+				ArrayAdapter<String> adapter = buildSeriesAdapter(lista, getApplicationContext());
+				ListView listViewSeries = (ListView) findViewById(R.id.lista_resultado_pesquisa_series);
+				listViewSeries.setAdapter(adapter);
+				adapter.notifyDataSetChanged();
+				
+				ProgressBar progressBar = (ProgressBar) findViewById(R.id.spinner_pesquisa_series);
+				progressBar.setVisibility(View.INVISIBLE);
+				listViewSeries.setVisibility(View.VISIBLE);
+			} catch(Exception e) {
+				Log.e(this.getClass().getName(), getString(R.string.erro_pesquisar_series), e);
+			}
 		}
 	}
 }
