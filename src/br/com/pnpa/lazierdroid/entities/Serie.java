@@ -97,4 +97,9 @@ public class Serie {
 	public void setTemporadas(Collection<Temporada> temporadas) {
 		this.temporadas = temporadas;
 	}
+
+	@Override
+	public String toString() {
+		return this.getNome();
+	}
 }

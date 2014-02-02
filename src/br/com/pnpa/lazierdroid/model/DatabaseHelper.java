@@ -1,4 +1,4 @@
-package br.com.pnpa.lazierdroid.service;
+package br.com.pnpa.lazierdroid.model;
 
 import java.sql.SQLException;
 

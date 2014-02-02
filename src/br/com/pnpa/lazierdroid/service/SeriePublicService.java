@@ -20,12 +20,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.util.Log;
-import android.util.Xml;
+import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
+import br.com.pnpa.lazierdroid.entities.Temporada;
 
 public class SeriePublicService extends BaseService {
 
@@ -36,6 +36,55 @@ public class SeriePublicService extends BaseService {
 		List<Serie> lista = parseSeries(in, expression); 
 		
 		return lista;
+	}
+	
+	public static Serie pesquisaDetalhesSerie(Serie serie) throws XPathExpressionException, ClientProtocolException, IOException {
+		String url = "http://services.tvrage.com/feeds/full_show_info.php?sid=" + URLEncoder.encode(String.valueOf(serie.getId()), "UTF-8");
+		InputStream in = downloadFile(url);
+		String expression = "/Show/Episodelist/Season";
+		return parseDetalheSerie(serie, in, expression);
+	}
+
+	private static Serie parseDetalheSerie(Serie serie, InputStream in, String expression) throws XPathExpressionException {
+		if(serie.getTemporadas() == null) {
+			serie.setTemporadas(new ArrayList<Temporada>());
+		}
+		
+		NodeList nodes = xmlParser(in, expression);
+		for(int i=0; i<nodes.getLength(); i++) {
+			Temporada temporada = parseTemporada(nodes.item(i));
+			temporada.setSerie(serie);
+			serie.getTemporadas().add(temporada);
+		}
+
+		return serie;
+	}
+
+	private static Temporada parseTemporada(Node item) {
+		Temporada temporada = new Temporada();
+		Element el = (Element) item;
+		temporada.setNumero(Integer.parseInt(el.getAttribute("no")));
+		temporada.setEpisodios(new ArrayList<Episodio>());
+		
+		NodeList episodeItems = el.getElementsByTagName("episode");
+		for(int i=0; i<episodeItems.getLength(); i++) {
+			Episodio episodio = parseEpisodio(episodeItems.item(i));
+			episodio.setTemporada(temporada);
+			temporada.getEpisodios().add(episodio);
+		}
+		
+		return temporada;
+	}
+
+	private static Episodio parseEpisodio(Node item) {
+		Episodio episodio = new Episodio();
+		
+		Element el = (Element) item;
+		episodio.setTitle(el.getElementsByTagName("title").item(0).getNodeValue());
+		episodio.setLink(el.getElementsByTagName("link").item(0).getNodeValue());
+		episodio.setDate(el.getElementsByTagName("airdate").item(0).getNodeValue());
+		
+		return episodio;
 	}
 
 	private static List<Serie> parseSeries(InputStream in, String expression) throws XPathExpressionException, XmlPullParserException, IOException {
@@ -64,16 +113,8 @@ public class SeriePublicService extends BaseService {
 		return serie;
 	}
 
-	private static NodeList xmlParser(InputStream in, String xpathExpression)
-			throws XmlPullParserException, IOException,
-			XPathExpressionException {
-//		XmlPullParser parser = Xml.newPullParser();
-//		parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-//        parser.setInput(in, null);
-//        parser.nextTag();
-        
+	private static NodeList xmlParser(InputStream in, String xpathExpression) throws XPathExpressionException {
         InputSource is = new InputSource(in);
-        
         XPath xpath = XPathFactory.newInstance().newXPath();
 		return (NodeList) xpath.evaluate(xpathExpression, is, XPathConstants.NODESET);
 	}
@@ -90,60 +131,4 @@ public class SeriePublicService extends BaseService {
 		}
 		return resp.getEntity().getContent();
 	}
-
-	public List<Serie> parse(InputStream in) throws XmlPullParserException, IOException {
-        try {
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(in, null);
-            parser.nextTag();
-            return parseSeries(parser);
-        } finally {
-            in.close();
-        }
-    }
-	
-	private List<Serie> parseSeries(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    List<Serie> entries = new ArrayList<Serie>();
-
-	    parser.require(XmlPullParser.START_TAG, null, "Results");
-	    while (parser.next() != XmlPullParser.END_TAG) {
-	        if (parser.getEventType() != XmlPullParser.START_TAG) {
-	            continue;
-	        }
-	        String name = parser.getName();
-	        // Starts by looking for the entry tag
-	        if (name.equals("show")) {
-	            entries.add(parseSerie(parser));
-	        } else {
-	            skip(parser);
-	        }
-	    }  
-	    return entries;
-	}
-	
-	private Serie parseSerie(XmlPullParser parser) {
-		Serie serie = new Serie();
-		
-		
-		
-		return serie;
-	}
-
-	private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
-	    if (parser.getEventType() != XmlPullParser.START_TAG) {
-	        throw new IllegalStateException();
-	    }
-	    int depth = 1;
-	    while (depth != 0) {
-	        switch (parser.next()) {
-	        case XmlPullParser.END_TAG:
-	            depth--;
-	            break;
-	        case XmlPullParser.START_TAG:
-	            depth++;
-	            break;
-	        }
-	    }
-	 }
 }

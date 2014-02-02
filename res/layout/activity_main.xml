@@ -32,20 +32,31 @@
         android:id="@+id/lista_resultado_pesquisa_series"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@+id/botao_incluir_series"
         android:layout_alignParentLeft="true"
         android:layout_alignRight="@+id/botao_pesquisar_serie"
         android:layout_below="@+id/campo_nome_serie"
         android:visibility="invisible" />
 
     <ProgressBar
-        android:id="@+id/spinner_pesquisa_series"
+        android:id="@+id/progress_bar_pesquisa_series"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_alignBottom="@+id/botao_incluir_series"
         android:layout_below="@+id/campo_nome_serie"
         android:layout_centerHorizontal="true"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/botao_incluir_series"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:text="@string/botao_incluir_series"
+        android:onClick="onClickIncluirSeriesSelecionadas"
         android:visibility="invisible" />
 
 </RelativeLayout>

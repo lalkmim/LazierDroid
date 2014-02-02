@@ -2,10 +2,11 @@
 <resources>
 
     <string name="app_name">LazierDroid</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Configurações</string>
     <string name="campo_nome_serie">Nome da série</string>
     <string name="botao_pesquisar">Pesquisar</string>
-    <string name="erro_pesquisar_series">Não foi possível recuperar a série pesquisada.</string>
+    <string name="botao_incluir_series">Incluir</string><string name="erro_pesquisar_series">Não foi possível recuperar a série pesquisada.</string>
+    <string name="erro_pesquisar_detalhes_serie">Erro ao recuperar detalhes da serie</string>
+    
 
 </resources>
