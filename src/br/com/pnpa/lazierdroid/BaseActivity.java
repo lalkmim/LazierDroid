@@ -55,13 +55,13 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			try {
-				Log.d("teste", "teste");
-				ArrayAdapter<String> adapter = buildSeriesAdapter(lista, getApplicationContext());
+				ProgressBar progressBar = (ProgressBar) findViewById(R.id.spinner_pesquisa_series);
 				ListView listViewSeries = (ListView) findViewById(R.id.lista_resultado_pesquisa_series);
+				
+				ArrayAdapter<String> adapter = buildSeriesAdapter(lista, getApplicationContext());
 				listViewSeries.setAdapter(adapter);
 				adapter.notifyDataSetChanged();
 				
-				ProgressBar progressBar = (ProgressBar) findViewById(R.id.spinner_pesquisa_series);
 				progressBar.setVisibility(View.INVISIBLE);
 				listViewSeries.setVisibility(View.VISIBLE);
 			} catch(Exception e) {
