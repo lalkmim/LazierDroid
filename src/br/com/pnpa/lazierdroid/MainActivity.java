@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import br.com.pnpa.lazierdroid.entities.Serie;
+import br.com.pnpa.lazierdroid.util.Util;
 
 public class MainActivity extends BaseActivity {
 
@@ -39,6 +40,7 @@ public class MainActivity extends BaseActivity {
 	}
 	
 	public void onClickIncluirSeriesSelecionadas(View v) {
+		Util.buildToast(getApplicationContext(), getString(R.string.msg_processando_inclusao_series)).show();
 		ListView listViewSeries = (ListView) findViewById(R.id.lista_resultado_pesquisa_series);
 		
 		SparseBooleanArray sba = listViewSeries.getCheckedItemPositions();

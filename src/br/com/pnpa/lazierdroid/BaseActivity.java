@@ -1,6 +1,6 @@
 package br.com.pnpa.lazierdroid;
 
-import java.util.Iterator;
+import java.sql.SQLException;
 import java.util.List;
 
 import android.content.Context;
@@ -12,24 +12,15 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import br.com.pnpa.lazierdroid.entities.Serie;
-import br.com.pnpa.lazierdroid.model.DatabaseHelper;
+import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
 import br.com.pnpa.lazierdroid.service.SeriePublicService;
+import br.com.pnpa.lazierdroid.service.SerieService;
+import br.com.pnpa.lazierdroid.util.Util;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 
 public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	protected static ArrayAdapter<Serie> buildSeriesAdapter(List<Serie> series, Context context) {
-		String[] nomesSeries = new String[series.size()];
-		long[] idsSeries = new long[series.size()];
-		Iterator<Serie> it = series.iterator();
-		int i=0;
-		
-		while(it.hasNext()) {
-			Serie serie = it.next();
-			nomesSeries[i] = serie.getNome();
-			idsSeries[i++] = serie.getId();
-		}
-		
 		return new ArrayAdapter<Serie>(
 				context, 
 				android.R.layout.simple_list_item_multiple_choice,
@@ -76,7 +67,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected Void doInBackground(Serie... _serie) {
 			try {
-				this.serie = SeriePublicService.pesquisaDetalhesSerie(_serie[0]);
+				this.serie = SeriePublicService.pesquisaDetalhesSerie(_serie[0], getHelper());				
 			} catch(Exception e) {
 				Log.e(this.getClass().getName(), getString(R.string.erro_pesquisar_detalhes_serie), e);
 			}
@@ -85,7 +76,13 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
+			try {
+				super.onPostExecute(result);
+				SerieService.incluirSerie(this.serie, getHelper());
+				Util.buildToast(getApplicationContext(), getString(R.string.msg_sucesso_inclusao_series)).show();
+			} catch (SQLException e) {
+				Log.e("ERROR", getString(R.string.erro_gravar_dados_serie), e);
+			}
 		}
 	}
 }

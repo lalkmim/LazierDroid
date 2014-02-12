@@ -7,6 +7,9 @@
     <string name="botao_pesquisar">Pesquisar</string>
     <string name="botao_incluir_series">Incluir</string><string name="erro_pesquisar_series">Não foi possível recuperar a série pesquisada.</string>
     <string name="erro_pesquisar_detalhes_serie">Erro ao recuperar detalhes da serie</string>
+    <string name="erro_gravar_dados_serie">Erro ao gravar dados da serie</string>
+    <string name="msg_processando_inclusao_series">Estamos recuperando os dados das séries selecionadas, em breve elas aparecerão em \&quot;Minhas Séries\&quot;.</string>
+    <string name="msg_sucesso_inclusao_series">As séries selecionadas foram incluídas com sucesso!</string>
     
 
 </resources>

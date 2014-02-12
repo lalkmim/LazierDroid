@@ -3,6 +3,7 @@ package br.com.pnpa.lazierdroid.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import android.util.Log;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
+import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
 
 public class SeriePublicService extends BaseService {
 
@@ -38,21 +40,22 @@ public class SeriePublicService extends BaseService {
 		return lista;
 	}
 	
-	public static Serie pesquisaDetalhesSerie(Serie serie) throws XPathExpressionException, ClientProtocolException, IOException {
+	public static Serie pesquisaDetalhesSerie(Serie serie, DatabaseHelper helper) throws XPathExpressionException, ClientProtocolException, IOException, SQLException {
 		String url = "http://services.tvrage.com/feeds/full_show_info.php?sid=" + URLEncoder.encode(String.valueOf(serie.getId()), "UTF-8");
+		Log.i("pesquisaDetalhesSerie url", url);
 		InputStream in = downloadFile(url);
 		String expression = "/Show/Episodelist/Season";
-		return parseDetalheSerie(serie, in, expression);
+		return parseDetalheSerie(serie, in, expression, helper);
 	}
 
-	private static Serie parseDetalheSerie(Serie serie, InputStream in, String expression) throws XPathExpressionException {
+	private static Serie parseDetalheSerie(Serie serie, InputStream in, String expression, DatabaseHelper helper) throws XPathExpressionException, SQLException {
 		if(serie.getTemporadas() == null) {
-			serie.setTemporadas(new ArrayList<Temporada>());
+			helper.getSerieDao().assignEmptyForeignCollection(serie, "temporadas");
 		}
 		
 		NodeList nodes = xmlParser(in, expression);
 		for(int i=0; i<nodes.getLength(); i++) {
-			Temporada temporada = parseTemporada(nodes.item(i));
+			Temporada temporada = parseTemporada(nodes.item(i), helper);
 			temporada.setSerie(serie);
 			serie.getTemporadas().add(temporada);
 		}
@@ -60,11 +63,11 @@ public class SeriePublicService extends BaseService {
 		return serie;
 	}
 
-	private static Temporada parseTemporada(Node item) {
+	private static Temporada parseTemporada(Node item, DatabaseHelper helper) throws SQLException {
 		Temporada temporada = new Temporada();
 		Element el = (Element) item;
 		temporada.setNumero(Integer.parseInt(el.getAttribute("no")));
-		temporada.setEpisodios(new ArrayList<Episodio>());
+		helper.getTemporadaDao().assignEmptyForeignCollection(temporada, "episodios");
 		
 		NodeList episodeItems = el.getElementsByTagName("episode");
 		for(int i=0; i<episodeItems.getLength(); i++) {
@@ -101,7 +104,7 @@ public class SeriePublicService extends BaseService {
 		Serie serie = new Serie();
 		Element el = (Element) item; 
 		
-		serie.setId(Long.parseLong(el.getElementsByTagName("showid").item(0).getTextContent()));
+		serie.setId(Integer.parseInt(el.getElementsByTagName("showid").item(0).getTextContent()));
 		serie.setNome(el.getElementsByTagName("name").item(0).getTextContent());
 		serie.setAnoInicio(Integer.parseInt(el.getElementsByTagName("started").item(0).getTextContent()));
 		serie.setAnoFim(Integer.parseInt(el.getElementsByTagName("started").item(0).getTextContent()));

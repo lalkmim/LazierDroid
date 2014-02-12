@@ -6,7 +6,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "episodios")
 public class Episodio {
 	@DatabaseField(generatedId = true)
-	private long id;
+	private int id;
 	
 	@DatabaseField(canBeNull = true)
 	private String date;
@@ -20,11 +20,11 @@ public class Episodio {
 	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idTemporada")
 	private Temporada temporada;
 
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 

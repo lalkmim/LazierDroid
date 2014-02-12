@@ -1,7 +1,6 @@
 package br.com.pnpa.lazierdroid.entities;
 
-import java.util.Collection;
-
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -9,7 +8,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "series")
 public class Serie {
 	@DatabaseField(id = true)
-    private long id;
+    private int id;
 	
 	@DatabaseField(canBeNull = false)
     private String nome;
@@ -30,15 +29,15 @@ public class Serie {
     private String status;
     
     @ForeignCollectionField
-    private Collection<Temporada> temporadas;
+    private ForeignCollection<Temporada> temporadas;
     
     public Serie() {}
     
-    public long getId() {
+    public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -90,12 +89,8 @@ public class Serie {
 		this.status = status;
 	}
 
-	public Collection<Temporada> getTemporadas() {
+	public ForeignCollection<Temporada> getTemporadas() {
 		return temporadas;
-	}
-
-	public void setTemporadas(Collection<Temporada> temporadas) {
-		this.temporadas = temporadas;
 	}
 
 	@Override

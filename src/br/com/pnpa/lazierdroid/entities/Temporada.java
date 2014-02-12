@@ -1,7 +1,6 @@
 package br.com.pnpa.lazierdroid.entities;
 
-import java.util.Collection;
-
+import com.j256.ormlite.dao.ForeignCollection;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -9,25 +8,24 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "temporadas")
 public class Temporada {
 	@DatabaseField(generatedId = true)
-	private long id;
+	private int id;
 	
 	@DatabaseField(canBeNull = false)
 	private int numero;
 	
-	@DatabaseField(canBeNull = true)
 	@ForeignCollectionField
-	private Collection<Episodio> episodios;
+	private ForeignCollection<Episodio> episodios;
 	
 	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idSerie")
 	private Serie serie;
 
 	public Temporada() {}
 	
-	public long getId() {
+	public int getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(int id) {
 		this.id = id;
 	}
 
@@ -39,12 +37,8 @@ public class Temporada {
 		this.numero = numero;
 	}
 
-	public Collection<Episodio> getEpisodios() {
+	public ForeignCollection<Episodio> getEpisodios() {
 		return episodios;
-	}
-
-	public void setEpisodios(Collection<Episodio> episodios) {
-		this.episodios = episodios;
 	}
 
 	public Serie getSerie() {
