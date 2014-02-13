@@ -24,6 +24,9 @@ import br.com.pnpa.lazierdroid.util.Util;
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 
 public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
+	protected static final String NOME = "nome";
+	protected static final String DETALHES = "detalhes";
+	
 	protected static ArrayAdapter<Serie> buildPesquisarSeriesAdapter(List<Serie> series, Context context) {
 		return new ArrayAdapter<Serie>(
 				context, 
@@ -35,12 +38,12 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		List<Map<String, String>> dados = new ArrayList<Map<String, String>>();
 		for(Serie serie : series) {
 			Map<String, String> item = new HashMap<String, String>();
-			item.put("nome", serie.getNome());
-			item.put("detalhes", "Temporadas: " + serie.getNumeroTemporadas());
+			item.put(NOME, serie.getNome());
+			item.put(DETALHES, "Temporadas: " + serie.getNumeroTemporadas());
 			dados.add(item);
 		}
 		
-		return new SimpleAdapter(context, dados, android.R.layout.simple_list_item_2, new String[] {"nome", "detalhes"}, new int[] {android.R.id.text1, android.R.id.text2});
+		return new SimpleAdapter(context, dados, android.R.layout.simple_list_item_2, new String[] {NOME, DETALHES}, new int[] {android.R.id.text1, android.R.id.text2});
 	}
 	
 	protected class PesquisaSeriesTask extends AsyncTask<String, Void, Void> {
@@ -78,31 +81,6 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	}
 	
 	protected class IncluiSerieTask extends AsyncTask<Serie, Void, Void> {
-		Serie serie = null;
-		
-		@Override
-		protected Void doInBackground(Serie... _serie) {
-			try {
-				this.serie = SeriePublicService.pesquisaDetalhesSerie(_serie[0], getHelper());				
-			} catch(Exception e) {
-				Log.e(this.getClass().getName(), getString(R.string.msg_erro_pesquisar_detalhes_serie), e);
-			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			try {
-				super.onPostExecute(result);
-				SerieService.incluirSerie(this.serie, getHelper());
-				Util.buildToast(getApplicationContext(), getString(R.string.msg_sucesso_inclusao_series)).show();
-			} catch (SQLException e) {
-				Log.e("ERROR", getString(R.string.msg_erro_gravar_dados_serie), e);
-			}
-		}
-	}
-	
-	protected class CarregaMinhasSeriesTask extends AsyncTask<Serie, Void, Void> {
 		Serie serie = null;
 		
 		@Override
