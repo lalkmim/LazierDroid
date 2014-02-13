@@ -1,6 +1,7 @@
 package br.com.pnpa.lazierdroid.service;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import android.util.Log;
@@ -34,11 +35,12 @@ public class SerieService extends BaseService {
 					}
 				});
 
-//		daoSerie.createOrUpdate(serie);
-
-		Log.i(DatabaseHelper.class.getName(),
-				"created new entries in onCreate: " + serie);
+		Log.i(DatabaseHelper.class.getName(), "created new entries in onCreate: " + serie);
 
 		return daoSerie.queryForId(serie.getId());
+	}
+
+	public static List<Serie> pesquisarMinhasSeries(DatabaseHelper helper) throws SQLException {
+		return helper.getSerieDao().queryForAll();
 	}
 }

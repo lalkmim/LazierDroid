@@ -9,20 +9,28 @@
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault" >
         <activity
-            android:name="br.com.pnpa.lazierdroid.MainActivity"
+            android:name="br.com.pnpa.lazierdroid.PesquisarSeriesActivity"
             android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="br.com.pnpa.lazierdroid.HomeActivity"
+            android:label="@string/title_activity_home" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="br.com.pnpa.lazierdroid.MinhasSeriesActivity"
+            android:label="@string/title_activity_minhas_series" >
         </activity>
     </application>
 

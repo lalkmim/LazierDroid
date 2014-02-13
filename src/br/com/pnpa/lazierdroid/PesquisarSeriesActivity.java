@@ -11,12 +11,12 @@ import android.widget.ProgressBar;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.util.Util;
 
-public class MainActivity extends BaseActivity {
+public class PesquisarSeriesActivity extends BaseActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.activity_pesquisar_series);
 	}
 
 	@Override
