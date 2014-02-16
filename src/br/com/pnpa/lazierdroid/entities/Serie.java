@@ -20,15 +20,12 @@ public class Serie {
     private int anoInicio;
     
     @DatabaseField(canBeNull = true)
-    private int anoFim;
-    
-    @DatabaseField(canBeNull = true)
-    private int numeroTemporadas;
+    private String imageURL;
     
     @DatabaseField(canBeNull = true)
     private String status;
     
-    @ForeignCollectionField
+    @ForeignCollectionField(eager = true)
     private ForeignCollection<Temporada> temporadas;
     
     public Serie() {}
@@ -65,22 +62,6 @@ public class Serie {
 		this.anoInicio = anoInicio;
 	}
 
-	public int getAnoFim() {
-		return anoFim;
-	}
-
-	public void setAnoFim(int anoFim) {
-		this.anoFim = anoFim;
-	}
-
-	public int getNumeroTemporadas() {
-		return numeroTemporadas;
-	}
-
-	public void setNumeroTemporadas(int numeroTemporadas) {
-		this.numeroTemporadas = numeroTemporadas;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -96,5 +77,13 @@ public class Serie {
 	@Override
 	public String toString() {
 		return this.getNome();
+	}
+
+	public String getImageURL() {
+		return imageURL;
+	}
+
+	public void setImageURL(String imageURL) {
+		this.imageURL = imageURL;
 	}
 }

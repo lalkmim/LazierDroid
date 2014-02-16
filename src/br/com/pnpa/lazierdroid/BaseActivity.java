@@ -1,6 +1,5 @@
 package br.com.pnpa.lazierdroid;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +15,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import br.com.pnpa.lazierdroid.entities.Serie;
+import br.com.pnpa.lazierdroid.entities.Temporada;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
-import br.com.pnpa.lazierdroid.service.SeriePublicService;
 import br.com.pnpa.lazierdroid.service.SerieService;
 import br.com.pnpa.lazierdroid.util.Util;
 
@@ -39,7 +38,13 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		for(Serie serie : series) {
 			Map<String, String> item = new HashMap<String, String>();
 			item.put(NOME, serie.getNome());
-			item.put(DETALHES, "Temporadas: " + serie.getNumeroTemporadas());
+			
+			int episodios = 0;
+			for(Temporada temporada : serie.getTemporadas()) {
+				episodios += temporada.getEpisodios().size();
+			}
+			
+			item.put(DETALHES, "Temporadas: " + serie.getTemporadas().size() + " - Episódios: " + episodios);
 			dados.add(item);
 		}
 		
@@ -52,7 +57,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected Void doInBackground(String... nomeSerie) {
 			try {
-				lista = SeriePublicService.pesquisaSerie(nomeSerie[0]);
+				lista = SerieService.pesquisaSerie(nomeSerie[0]);
 			} catch (Exception e) {
 				Log.e(this.getClass().getName(), getString(R.string.msg_erro_pesquisar_series), e);
 			}
@@ -86,7 +91,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected Void doInBackground(Serie... _serie) {
 			try {
-				this.serie = SeriePublicService.pesquisaDetalhesSerie(_serie[0], getHelper());				
+				this.serie = SerieService.pesquisaDetalhesSerie(_serie[0], getHelper());				
 			} catch(Exception e) {
 				Log.e(this.getClass().getName(), getString(R.string.msg_erro_pesquisar_detalhes_serie), e);
 			}
@@ -97,9 +102,9 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		protected void onPostExecute(Void result) {
 			try {
 				super.onPostExecute(result);
-				SerieService.incluirSerie(this.serie, getHelper());
+//				SerieService.incluirSerie(this.serie, getHelper());
 				Util.buildToast(getApplicationContext(), getString(R.string.msg_sucesso_inclusao_series)).show();
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				Log.e("ERROR", getString(R.string.msg_erro_gravar_dados_serie), e);
 			}
 		}

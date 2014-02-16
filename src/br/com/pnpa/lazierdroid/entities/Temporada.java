@@ -10,13 +10,13 @@ public class Temporada {
 	@DatabaseField(generatedId = true)
 	private int id;
 	
-	@DatabaseField(canBeNull = false)
+	@DatabaseField(canBeNull = false, uniqueIndexName = "un_temp")
 	private int numero;
 	
-	@ForeignCollectionField
+	@ForeignCollectionField(eager = true)
 	private ForeignCollection<Episodio> episodios;
 	
-	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idSerie")
+	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idSerie", uniqueIndexName = "un_temp")
 	private Serie serie;
 
 	public Temporada() {}

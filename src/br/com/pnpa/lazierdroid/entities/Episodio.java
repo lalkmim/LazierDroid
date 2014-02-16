@@ -8,6 +8,9 @@ public class Episodio {
 	@DatabaseField(generatedId = true)
 	private int id;
 	
+	@DatabaseField(canBeNull = false, uniqueIndexName = "un_epis")
+	private int numero;
+	
 	@DatabaseField(canBeNull = true)
 	private String date;
 	
@@ -17,7 +20,7 @@ public class Episodio {
 	@DatabaseField(canBeNull = true)
 	private String title;
 	
-	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idTemporada")
+	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idTemporada", uniqueIndexName = "un_epis")
 	private Temporada temporada;
 
 	public int getId() {
@@ -26,6 +29,14 @@ public class Episodio {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public int getNumero() {
+		return numero;
+	}
+
+	public void setNumero(int numero) {
+		this.numero = numero;
 	}
 
 	public String getDate() {

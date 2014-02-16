@@ -1,5 +1,5 @@
 #
-# generated on 2014/02/09 11:18:18
+# generated on 2014/02/16 10:08:02
 #
 # --table-start--
 dataClass=br.com.pnpa.lazierdroid.entities.Serie
@@ -20,10 +20,7 @@ fieldName=link
 fieldName=anoInicio
 # --field-end--
 # --field-start--
-fieldName=anoFim
-# --field-end--
-# --field-start--
-fieldName=numeroTemporadas
+fieldName=imageURL
 # --field-end--
 # --field-start--
 fieldName=status
@@ -31,6 +28,7 @@ fieldName=status
 # --field-start--
 fieldName=temporadas
 foreignCollection=true
+foreignCollectionEager=true
 # --field-end--
 # --table-fields-end--
 # --table-end--
@@ -46,15 +44,18 @@ generatedId=true
 # --field-start--
 fieldName=numero
 canBeNull=false
+uniqueIndexName=un_temp
 # --field-end--
 # --field-start--
 fieldName=episodios
 foreignCollection=true
+foreignCollectionEager=true
 # --field-end--
 # --field-start--
 fieldName=serie
 columnName=idSerie
 foreign=true
+uniqueIndexName=un_temp
 foreignAutoRefresh=true
 # --field-end--
 # --table-fields-end--
@@ -69,6 +70,11 @@ fieldName=id
 generatedId=true
 # --field-end--
 # --field-start--
+fieldName=numero
+canBeNull=false
+uniqueIndexName=un_epis
+# --field-end--
+# --field-start--
 fieldName=date
 # --field-end--
 # --field-start--
@@ -81,6 +87,7 @@ fieldName=title
 fieldName=temporada
 columnName=idTemporada
 foreign=true
+uniqueIndexName=un_epis
 foreignAutoRefresh=true
 # --field-end--
 # --table-fields-end--
