@@ -23,6 +23,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xmlpull.v1.XmlPullParserException;
 
+import com.j256.ormlite.stmt.PreparedQuery;
+
 import android.util.Log;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
@@ -46,7 +48,6 @@ public class SerieService extends BaseService {
 		InputStream in = downloadFile(url);
 		String expression = "/Show";
 		
-		serie = helper.getSerieDao().createIfNotExists(serie);
 		serie = parseDetalheSerie(serie, in, expression, helper);
 		
 		return serie;
@@ -56,6 +57,8 @@ public class SerieService extends BaseService {
 		NodeList nodes = xmlParser(in, expression);
 		Element el = (Element) nodes.item(0);
 		serie.setImageURL(el.getElementsByTagName("image").item(0).getTextContent());
+		helper.getSerieDao().createOrUpdate(serie);
+		
 		nodes = el.getElementsByTagName("Season");
 		for(int i=0; i<nodes.getLength(); i++) {
 			parseTemporada(nodes.item(i), serie, helper);
@@ -149,6 +152,7 @@ public class SerieService extends BaseService {
 	}
 	
 	public static List<Serie> pesquisarMinhasSeries(DatabaseHelper helper) throws SQLException {
-		return helper.getSerieDao().queryForAll();
+		PreparedQuery<Serie> preparedQuery = helper.getSerieDao().queryBuilder().orderBy("nome", true).prepare();
+		return helper.getSerieDao().query(preparedQuery);
 	}
 }

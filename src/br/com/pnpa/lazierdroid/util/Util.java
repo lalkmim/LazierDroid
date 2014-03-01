@@ -1,7 +1,12 @@
 package br.com.pnpa.lazierdroid.util;
 
+import java.io.IOException;
+import java.net.URL;
+
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.widget.Toast;
 
 public class Util {
@@ -15,5 +20,10 @@ public class Util {
 
 		AlertDialog dialog = builder.create();
 		return dialog;
+	}
+	
+	public static Bitmap loadImageBitmap(String url) throws IOException {
+		URL newurl = new URL(url);
+		return BitmapFactory.decodeStream(newurl.openConnection().getInputStream());
 	}
 }

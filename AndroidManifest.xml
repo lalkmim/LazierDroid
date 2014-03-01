@@ -20,6 +20,7 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -30,6 +31,10 @@
         <activity
             android:name="br.com.pnpa.lazierdroid.MinhasSeriesActivity"
             android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="br.com.pnpa.lazierdroid.DetalheSerieActivity"
+            android:label="@string/title_activity_detalhe_serie" >
         </activity>
     </application>
 

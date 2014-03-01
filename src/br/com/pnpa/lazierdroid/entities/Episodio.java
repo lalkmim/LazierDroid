@@ -70,4 +70,18 @@ public class Episodio {
 	public void setTemporada(Temporada temporada) {
 		this.temporada = temporada;
 	}
+
+	public String getNumeroFormatado() {
+		String numeroFormatado = "S";
+		
+		int numTemporada = getTemporada().getNumero();
+		if(numTemporada < 10) numeroFormatado += "0";
+		
+		numeroFormatado += numTemporada + "E";
+		
+		if(getNumero() < 10) numeroFormatado += "0";
+		numeroFormatado += getNumero();
+		
+		return numeroFormatado;
+	}
 }

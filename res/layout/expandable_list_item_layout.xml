@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:id="@+id/descricaoLayout"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/itemName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:paddingTop="4dp" />
+
+        <TextView
+            android:id="@+id/itemDetalhes"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/itemName"
+            android:paddingBottom="4dp"
+            android:textSize="10sp" />
+        
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/opcoesEpisodioLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_toRightOf="@+id/descricaoLayout"
+        android:layout_alignTop="@+id/descricaoLayout"
+        android:layout_alignBottom="@+id/descricaoLayout" >
+
+        <Button
+            android:id="@+id/botao_baixar_torrent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonStyleSmall"
+            android:text="T"
+            android:layout_weight="1" />
+        
+        <Button
+            android:id="@+id/botao_baixar_legenda"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonStyleSmall"
+            android:text="L"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/botao_ver_video"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonStyleSmall"
+            android:text="V"
+            android:layout_weight="1" />
+        
+    </LinearLayout>
+
+</RelativeLayout>

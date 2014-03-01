@@ -6,14 +6,17 @@ import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
+import br.com.pnpa.lazierdroid.adapter.TemporadasEpisodiosAdapter;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
@@ -37,18 +40,34 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		List<Map<String, String>> dados = new ArrayList<Map<String, String>>();
 		for(Serie serie : series) {
 			Map<String, String> item = new HashMap<String, String>();
-			item.put(NOME, serie.getNome());
 			
 			int episodios = 0;
 			for(Temporada temporada : serie.getTemporadas()) {
-				episodios += temporada.getEpisodios().size();
+				episodios = episodios + temporada.getEpisodios().size();
 			}
 			
+			item.put(NOME, serie.getNome());
 			item.put(DETALHES, "Temporadas: " + serie.getTemporadas().size() + " - Episódios: " + episodios);
+			
 			dados.add(item);
 		}
 		
 		return new SimpleAdapter(context, dados, android.R.layout.simple_list_item_2, new String[] {NOME, DETALHES}, new int[] {android.R.id.text1, android.R.id.text2});
+	}
+	
+	protected TemporadasEpisodiosAdapter buildDetalhesSerieTemporadasAdapter(Serie serie, Context context) {
+		List<Map<String, String>> dados = new ArrayList<Map<String, String>>();
+		for(Temporada temporada : serie.getTemporadas()) {
+			Map<String, String> item = new HashMap<String, String>();
+			
+			item.put(NOME, "Temporada " + temporada.getNumero());
+			item.put(DETALHES, "Episódios: " + temporada.getEpisodios().size());
+			
+			dados.add(item);
+		}
+		
+//		return new SimpleAdapter(context, dados, android.R.layout.simple_list_item_2, new String[] {NOME, DETALHES}, new int[] {android.R.id.text1, android.R.id.text2});
+		return new TemporadasEpisodiosAdapter(context, new ArrayList<Temporada>(serie.getTemporadas()));
 	}
 	
 	protected class PesquisaSeriesTask extends AsyncTask<String, Void, Void> {
@@ -102,10 +121,45 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		protected void onPostExecute(Void result) {
 			try {
 				super.onPostExecute(result);
-//				SerieService.incluirSerie(this.serie, getHelper());
 				Util.buildToast(getApplicationContext(), getString(R.string.msg_sucesso_inclusao_series)).show();
 			} catch (Exception e) {
 				Log.e("ERROR", getString(R.string.msg_erro_gravar_dados_serie), e);
+			}
+		}
+	}
+	
+	protected class LoadExternalImageTask extends AsyncTask<Integer, Void, Void> {
+		Integer idSerie;
+		Integer idView;
+		Bitmap imagem;
+
+		@Override
+		protected Void doInBackground(Integer... params) {
+			try {
+				idSerie = params[0];
+				idView = params[1];
+				
+				Serie serie = getHelper().getSerieDao().queryForId(idSerie);
+				imagem = Util.loadImageBitmap(serie.getImageURL());
+			} catch (Exception e) {
+				String msgErro = getString(R.string.msg_erro_carregar_imagem_externa);
+				Log.e("ERROR", msgErro, e);
+				Util.buildToast(getApplicationContext(), msgErro);
+			}
+			
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Void result) {
+			try {
+				super.onPostExecute(result);
+				ImageView imagemDetalheSerie = (ImageView) findViewById(idView);
+				imagemDetalheSerie.setImageBitmap(imagem);
+			} catch(Exception e) {
+				String msgErro = getString(R.string.msg_erro_carregar_imagem_externa);
+				Log.e("ERROR", msgErro, e);
+				Util.buildToast(getApplicationContext(), msgErro);
 			}
 		}
 	}
