@@ -21,7 +21,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static final String DATABASE_NAME = "lazierDroid.db";
 	// any time you make changes to your database objects, you may have to
 	// increase the database version
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 11;
 
 	// the DAO object we use to access the Serie table
 	private Dao<Serie, Integer> serieDao = null;
@@ -60,7 +60,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
 		try {
 			Log.i(DatabaseHelper.class.getName(), "onUpgrade");
-			if (oldVersion < 9) {
+			if (oldVersion < DATABASE_VERSION) {
 				TableUtils.dropTable(connectionSource, Episodio.class, true);
 				TableUtils.dropTable(connectionSource, Temporada.class, true);
 				TableUtils.dropTable(connectionSource, Serie.class, true);

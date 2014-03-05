@@ -7,23 +7,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xmlpull.v1.XmlPullParserException;
-
-import com.j256.ormlite.stmt.PreparedQuery;
 
 import android.util.Log;
 import br.com.pnpa.lazierdroid.entities.Episodio;
@@ -31,11 +21,13 @@ import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
 
+import com.j256.ormlite.stmt.PreparedQuery;
+
 public class SerieService extends BaseService {
 
 	public static List<Serie> pesquisaSerie(String nomeSerie) throws IllegalStateException, IOException, XmlPullParserException, XPathExpressionException {
 		String url = "http://services.tvrage.com/feeds/search.php?show=" + URLEncoder.encode(nomeSerie, "UTF-8");
-		InputStream in = downloadFile(url);
+		InputStream in = downloadFile(url).getIs();
 		String expression = "/Results/show";
 		List<Serie> lista = parseSeries(in, expression); 
 		
@@ -45,7 +37,7 @@ public class SerieService extends BaseService {
 	public static Serie pesquisaDetalhesSerie(Serie serie, DatabaseHelper helper) throws XPathExpressionException, ClientProtocolException, IOException, SQLException {
 		String url = "http://services.tvrage.com/feeds/full_show_info.php?sid=" + URLEncoder.encode(String.valueOf(serie.getId()), "UTF-8");
 		Log.i("pesquisaDetalhesSerie url", url);
-		InputStream in = downloadFile(url);
+		InputStream in = downloadFile(url).getIs();
 		String expression = "/Show";
 		
 		serie = parseDetalheSerie(serie, in, expression, helper);
@@ -132,27 +124,9 @@ public class SerieService extends BaseService {
 		return serie;
 	}
 
-	private static NodeList xmlParser(InputStream in, String xpathExpression) throws XPathExpressionException {
-        InputSource is = new InputSource(in);
-        XPath xpath = XPathFactory.newInstance().newXPath();
-		return (NodeList) xpath.evaluate(xpathExpression, is, XPathConstants.NODESET);
-	}
-
-	private static InputStream downloadFile(String url) throws IOException,
-			ClientProtocolException {
-		HttpGet uri = new HttpGet(url);    
-		DefaultHttpClient client = new DefaultHttpClient();
-		HttpResponse resp = client.execute(uri);
-
-		StatusLine status = resp.getStatusLine();
-		if (status.getStatusCode() != 200) {
-		    Log.d(SerieService.class.getName(), "HTTP error, invalid server status code: " + resp.getStatusLine());  
-		}
-		return resp.getEntity().getContent();
-	}
-	
 	public static List<Serie> pesquisarMinhasSeries(DatabaseHelper helper) throws SQLException {
 		PreparedQuery<Serie> preparedQuery = helper.getSerieDao().queryBuilder().orderBy("nome", true).prepare();
 		return helper.getSerieDao().query(preparedQuery);
 	}
+	
 }

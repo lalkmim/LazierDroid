@@ -18,7 +18,9 @@
 	        android:id="@+id/imageView_detalhe_serie_capa"
 	        android:layout_width="150dp"
 	        android:layout_height="wrap_content"
-	        android:layout_marginBottom="5dp" />
+	        android:layout_marginBottom="5dp"
+	        android:scaleType="centerInside"
+    		android:adjustViewBounds="true" />
 	
 	    <TextView
 	        android:id="@+id/textView_titulo_detalhe_serie"

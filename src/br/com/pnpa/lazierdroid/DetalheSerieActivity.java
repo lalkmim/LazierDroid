@@ -6,10 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.TextView;
-import br.com.pnpa.lazierdroid.adapter.TemporadasEpisodiosAdapter;
+import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
+import br.com.pnpa.lazierdroid.entities.Temporada;
 
 public class DetalheSerieActivity extends BaseActivity {
 	private Serie serie;
@@ -31,10 +34,27 @@ public class DetalheSerieActivity extends BaseActivity {
 			anoInicio.setText(getString(R.string.label_ano_inicio) + " " + serie.getAnoInicio());
 			
 			TemporadasEpisodiosAdapter adapter = buildDetalhesSerieTemporadasAdapter(serie, getApplicationContext());
-//		    expListViewTemporadas.setIndicatorBounds(0, 40);
-//		    expListViewTemporadas.setChildIndicatorBounds(0, 40);
 			expListViewTemporadas.setAdapter(adapter);
 			adapter.notifyDataSetChanged();
+			
+			expListViewTemporadas.setOnChildClickListener(new OnChildClickListener() {
+				@Override
+				public boolean onChildClick(ExpandableListView expListView, View v, int posTemporada, int posEpisodio, long id) {
+					Button button = (Button) v.findViewById(R.id.botao_status_video);
+					Temporada temporada = (Temporada) expListView.getAdapter().getItem(posTemporada);
+					final Episodio episodio = (Episodio) temporada.getEpisodios().toArray()[posEpisodio];
+					
+					Log.d("teste", "episodio.id: " + episodio.getId());
+
+					button.setOnClickListener(new Button.OnClickListener() {
+						public void onClick(View v) {
+							new DownloadTorrentTask().execute(episodio);
+						}
+					});
+
+			        return false;
+				}
+			});
 			
 			new LoadExternalImageTask().execute(new Integer[] {idSerie, R.id.imageView_detalhe_serie_capa});
 		} catch (Exception e) {

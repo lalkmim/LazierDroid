@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/config_titulo" >
+
+    <PreferenceCategory android:title="@string/config_subtitulo_rede" >
+        <EditTextPreference
+            android:dialogMessage="smb://&lt;nome_do_computador>/&lt;caminho_da_pasta>/"
+            android:dialogTitle="@string/pasta_torrents"
+            android:key="config_torrent_folder"
+            android:summary="@string/pasta_torrents_descricao"
+            android:title="@string/pasta_torrents" />
+        <EditTextPreference
+            android:dialogMessage="smb://&lt;nome_do_computador>/&lt;caminho_da_pasta>/"
+            android:dialogTitle="@string/pasta_videos_legendas_temporaria"
+            android:key="config_temp_folder"
+            android:summary="@string/pasta_videos_legendas_temporaria_descricao"
+            android:title="@string/pasta_videos_legendas_temporaria" />
+        <EditTextPreference
+            android:dialogMessage="smb://&lt;nome_do_computador>/&lt;caminho_da_pasta>/"
+            android:dialogTitle="@string/pasta_videos_legendas"
+            android:key="config_video_folder"
+            android:summary="@string/pasta_videos_legendas_descricao"
+            android:title="@string/pasta_videos_legendas" />
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/config_subtitulo_qualidade" >
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="config_video_hd"
+            android:summary="@string/switch_videos_hd_descricao"
+            android:title="@string/switch_videos_hd" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

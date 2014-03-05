@@ -22,6 +22,15 @@ public class Episodio {
 	
 	@DatabaseField(foreign = true, foreignAutoRefresh = true, columnName = "idTemporada", uniqueIndexName = "un_epis")
 	private Temporada temporada;
+	
+	@DatabaseField(canBeNull = true)
+	private String linkTorrent;
+	
+	@DatabaseField(canBeNull = true)
+	private String nomeVideo;
+	
+	@DatabaseField(canBeNull = true)
+	private String nomeLegenda;
 
 	public int getId() {
 		return id;
@@ -83,5 +92,46 @@ public class Episodio {
 		numeroFormatado += getNumero();
 		
 		return numeroFormatado;
+	}
+
+	public String getNomeLegenda() {
+		return nomeLegenda;
+	}
+
+	public void setNomeLegenda(String nomeLegenda) {
+		this.nomeLegenda = nomeLegenda;
+	}
+
+	public String getNomeVideo() {
+		return nomeVideo;
+	}
+
+	public void setNomeVideo(String nomeVideo) {
+		this.nomeVideo = nomeVideo;
+	}
+
+	public String getLinkTorrent() {
+		return linkTorrent;
+	}
+
+	public void setLinkTorrent(String linkTorrent) {
+		this.linkTorrent = linkTorrent;
+	}
+	
+	public String getStatusVideo() {
+		if(this.getNomeVideo() != null)
+			return "OK";
+		
+		if(this.getLinkTorrent() != null)
+			return "Baixando";
+		
+		return "Pendente"; 
+	}
+	
+	public String getStatusLegenda() {
+		if(this.getNomeLegenda() != null)
+			return "OK";
+		else
+			return "Pendente";
 	}
 }

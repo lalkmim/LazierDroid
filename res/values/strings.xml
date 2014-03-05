@@ -17,11 +17,29 @@
     <string name="msg_processando_inclusao_series">Estamos recuperando os dados das séries selecionadas, em breve elas aparecerão em \&quot;Minhas Séries\&quot;.</string>
     <string name="msg_sucesso_inclusao_series">As séries selecionadas foram incluídas com sucesso!</string>
     <string name="msg_erro_pesquisar_minhas_series">Não foi possível recuperar as séries.</string>
-	<string name="msg_erro_carregar_dados_serie">Não foi possível carregar os dados da série selecionada.</string>
-	<string name="msg_erro_carregar_imagem_externa">Não foi possível carregar as imagens externas.</string>
-	<string name="title_activity_detalhe_serie">Detalhes da Série</string>
+    <string name="msg_erro_carregar_dados_serie">Não foi possível carregar os dados da série selecionada.</string>
+    <string name="msg_erro_carregar_imagem_externa">Não foi possível carregar as imagens externas.</string>
+    <string name="msg_erro_baixar_torrent">Não foi possível baixar o torrent do episódio selecionado.</string>
+    <string name="title_activity_detalhe_serie">Detalhes da Série</string>
     <string name="hello_world">Hello world!</string>
     <string name="label_ano_inicio">Começou em:</string>
     <string name="botao_tvrage">TVRage.com</string>
+    
+    <string name="title_activity_config">Configurações</string>
+    <string name="config_titulo">Configurações</string>
+    <string name="config_subtitulo_rede">Rede</string>
+    <string name="config_subtitulo_qualidade">Qualidade</string>
+    <string name="pasta_torrents">Pasta dos torrents</string>
+    <string name="pasta_videos_legendas_temporaria">Pasta temporária</string>
+    <string name="pasta_videos_legendas">Pasta dos vídeos</string>
+    <string name="pasta_torrents_descricao">Pasta onde os arquivos TORRENT deverão ser gravados</string>
+    <string name="pasta_videos_legendas_temporaria_descricao">Pasta onde vídeos e legendas ficarão temporariamente</string>
+    <string name="pasta_videos_legendas_descricao">Pasta onde vídeos e legendas ficarão em definitivo</string>
 
+    <string name="header_status_video">Vídeo</string>
+    <string name="header_status_legenda">Legenda</string>
+    <string name="botao_baixar">Baixar</string>
+    <string name="botao_assistir">Assistir</string>
+    <string name="switch_videos_hd">720p</string>
+    <string name="switch_videos_hd_descricao">Os vídeos devem ser baixados em qualidade superior (720p)?</string>
 </resources>

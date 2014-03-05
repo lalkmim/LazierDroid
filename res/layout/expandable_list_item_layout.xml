@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="wrap_content" >
 
     <LinearLayout
-        android:id="@+id/descricaoLayout"
-        android:layout_width="200dp"
+        android:id="@+id/descricaoEpisodioLayout"
+        android:layout_width="180dp"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:orientation="vertical" >
@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:paddingTop="4dp" />
+            android:paddingTop="3dp" />
 
         <TextView
             android:id="@+id/itemDetalhes"
@@ -24,6 +24,14 @@
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
             android:layout_below="@id/itemName"
+            android:textSize="10sp" />
+        
+        <TextView
+            android:id="@+id/itemStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@id/itemDetalhes"
             android:paddingBottom="4dp"
             android:textSize="10sp" />
         
@@ -32,36 +40,35 @@
     <LinearLayout
         android:id="@+id/opcoesEpisodioLayout"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="fill_parent"
         android:orientation="horizontal"
-        android:layout_toRightOf="@+id/descricaoLayout"
-        android:layout_alignTop="@+id/descricaoLayout"
-        android:layout_alignBottom="@+id/descricaoLayout" >
+        android:layout_toRightOf="@+id/descricaoEpisodioLayout"
+        android:layout_alignTop="@+id/descricaoEpisodioLayout"
+        android:layout_alignBottom="@+id/descricaoEpisodioLayout"
+        android:layout_alignParentRight="true"
+        android:focusable="false" >
 
         <Button
-            android:id="@+id/botao_baixar_torrent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/botao_status_video"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
             style="?android:attr/buttonStyleSmall"
-            android:text="T"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:textSize="10sp"
+            android:text="@string/botao_baixar"
+            android:focusable="true" />
         
         <Button
-            android:id="@+id/botao_baixar_legenda"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/botao_status_legenda"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
             style="?android:attr/buttonStyleSmall"
-            android:text="L"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:text="@string/botao_assistir"
+            android:textSize="10sp"
+            android:enabled="false"
+            android:focusable="true" />
 
-        <Button
-            android:id="@+id/botao_ver_video"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="?android:attr/buttonStyleSmall"
-            android:text="V"
-            android:layout_weight="1" />
-        
     </LinearLayout>
 
 </RelativeLayout>
