@@ -27,6 +27,9 @@ public class Episodio {
 	private String linkTorrent;
 	
 	@DatabaseField(canBeNull = true)
+	private String caminhoTorrent;
+	
+	@DatabaseField(canBeNull = true)
 	private String nomeVideo;
 	
 	@DatabaseField(canBeNull = true)
@@ -133,5 +136,13 @@ public class Episodio {
 			return "OK";
 		else
 			return "Pendente";
+	}
+
+	public String getCaminhoTorrent() {
+		return caminhoTorrent;
+	}
+
+	public void setCaminhoTorrent(String caminhoTorrent) {
+		this.caminhoTorrent = caminhoTorrent;
 	}
 }

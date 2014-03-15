@@ -1,4 +1,4 @@
-package br.com.pnpa.lazierdroid.service;
+package br.com.pnpa.lazierdroid.services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,8 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
-
-import android.util.Log;
+import br.com.pnpa.lazierdroid.util.Log;
 
 public class BaseService {
 	protected static String lerArquivo(InputStream stream) throws IOException {
@@ -43,15 +42,20 @@ public class BaseService {
 	}
 
 	protected static DownloadFile downloadFile(String url) throws IOException, ClientProtocolException {
-		HttpGet uri = new HttpGet(url);
-		uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
-		DefaultHttpClient client = new DefaultHttpClient();
-		HttpResponse resp = client.execute(uri);
-
-		StatusLine status = resp.getStatusLine();
-		if (status.getStatusCode() != 200) {
-		    Log.d(SerieService.class.getName(), "HTTP error, invalid server status code: " + resp.getStatusLine());
-		    return null;
+		HttpResponse resp = null;
+		try {
+			HttpGet uri = new HttpGet(url);
+			uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
+			DefaultHttpClient client = new DefaultHttpClient();
+			resp = client.execute(uri);
+	
+			StatusLine status = resp.getStatusLine();
+			if (status.getStatusCode() != 200) {
+			    Log.d("HTTP error, invalid server status code: " + resp.getStatusLine());
+			    return null;
+			}
+		} catch(Exception e) {
+			return null;
 		}
 		
 		DownloadFile file = new DownloadFile();
@@ -63,13 +67,13 @@ public class BaseService {
 		Header[] headers = resp.getHeaders("Content-Disposition");
 		for(int i=0; i<headers.length; i++) {
 			HeaderElement[] headerElements = headers[i].getElements();
-			Log.d("teste", "header[" + i + "].name: " + headers[i].getName());
-			Log.d("teste", "header[" + i + "].value: " + headers[i].getValue());
+			Log.d("header[" + i + "].name: " + headers[i].getName());
+			Log.d("header[" + i + "].value: " + headers[i].getValue());
 			for(int j=0; j<headerElements.length; j++) {
-				Log.d("teste", "headerElement[" + j + "].name: " + headerElements[j].getName());
-				Log.d("teste", "headerElement[" + j + "].value: " + headerElements[j].getValue());
-				Log.d("teste", "headerElement[" + j + "].parameter(\"filename\").name: " + headerElements[j].getParameterByName("filename").getName());
-				Log.d("teste", "headerElement[" + j + "].parameter(\"filename\").value: " + headerElements[j].getParameterByName("filename").getValue());
+				Log.d("headerElement[" + j + "].name: " + headerElements[j].getName());
+				Log.d("headerElement[" + j + "].value: " + headerElements[j].getValue());
+				Log.d("headerElement[" + j + "].parameter(\"filename\").name: " + headerElements[j].getParameterByName("filename").getName());
+				Log.d("headerElement[" + j + "].parameter(\"filename\").value: " + headerElements[j].getParameterByName("filename").getValue());
 				
 				String fileName = headerElements[j].getParameterByName("filename").getValue();
 				if(fileName != null) {

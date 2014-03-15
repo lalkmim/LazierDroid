@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,7 +12,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import br.com.pnpa.lazierdroid.entities.Serie;
-import br.com.pnpa.lazierdroid.service.SerieService;
+import br.com.pnpa.lazierdroid.services.SerieService;
+import br.com.pnpa.lazierdroid.util.Log;
 import br.com.pnpa.lazierdroid.util.Util;
 
 public class MinhasSeriesActivity extends BaseActivity {
@@ -28,7 +28,7 @@ public class MinhasSeriesActivity extends BaseActivity {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				Serie selecionada = listaSeries.get(position);
-				Log.d("teste", "ID: " + selecionada.getId());
+				Log.d("ID: " + selecionada.getId());
 				Intent intent = new Intent(MinhasSeriesActivity.this, DetalheSerieActivity.class);
 				intent.putExtra("id", selecionada.getId());
 		    	startActivity(intent);
@@ -42,7 +42,7 @@ public class MinhasSeriesActivity extends BaseActivity {
 			adapter.notifyDataSetChanged();
 		} catch (SQLException e) {
 			String msgErro = getString(R.string.msg_erro_pesquisar_minhas_series);
-			Log.e("ERROR", msgErro, e);
+			Log.e(msgErro, e);
 			Util.buildToast(this, msgErro);
 		} finally {
 			findViewById(R.id.progress_bar_minhas_series).setVisibility(View.INVISIBLE);

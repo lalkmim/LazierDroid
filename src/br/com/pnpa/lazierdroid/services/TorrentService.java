@@ -1,4 +1,4 @@
-package br.com.pnpa.lazierdroid.service;
+package br.com.pnpa.lazierdroid.services;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,33 +10,50 @@ import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import jcifs.smb.SmbFile;
-
 import org.apache.http.client.ClientProtocolException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.util.Log;
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
 import br.com.pnpa.lazierdroid.entities.Episodio;
-import br.com.pnpa.lazierdroid.entities.Torrent;
+import br.com.pnpa.lazierdroid.entities.LazierFile;
+import br.com.pnpa.lazierdroid.entities.TorrentFile;
+import br.com.pnpa.lazierdroid.util.Log;
 import br.com.pnpa.lazierdroid.util.Util;
 
 public class TorrentService extends BaseService {
 
-	public static Torrent buscaTorrent(Episodio episodio, Boolean modoHD, String torrentFolder) throws Exception {
-		List<Torrent> torrents = buscaUrlsTorrents(episodio, modoHD);
+	public static TorrentFile buscaTorrent(Episodio episodio, Boolean modoHD, String torrentFolder) throws Exception {
+		if(episodio.getCaminhoTorrent() != null) {
+			LazierFile arquivoTemp = new LazierFile(episodio.getCaminhoTorrent());
+			if(arquivoTemp.exists()) {
+				TorrentFile torrentFile = new TorrentFile();
+				torrentFile.setLocalFile(arquivoTemp);
+				
+				String fileName = arquivoTemp.getCaminhoArquivo();
+				if(fileName.indexOf("/") >= 0) {
+					fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
+				}
+				
+				torrentFile.setFileName(fileName);
+				torrentFile.setLink(episodio.getLinkTorrent());
+				
+				return torrentFile;
+			}
+		}
+		
+		List<TorrentFile> torrents = buscaUrlsTorrents(episodio, modoHD);
 		
 		int i = 0;
-		Torrent torrent = null;
+		TorrentFile torrent = null;
 		while (i < torrents.size()) {
 			torrent = torrents.get(i++);
 			
-			Log.d("teste", "torrent.fileName: " + torrent.getFileName());
-			Log.d("teste", "torrent.link: " + Util.ajustarLink(torrent.getLink()));
+			Log.d("torrent.fileName: " + torrent.getFileName());
+			Log.d("torrent.link: " + Util.ajustarLink(torrent.getLink()));
 			
-			SmbFile arquivo = IOService.salvarArquivo(Util.ajustarLink(torrent.getLink()), torrentFolder + torrent.getFileName());
+			LazierFile arquivo = IOService.salvarArquivo(Util.ajustarLink(torrent.getLink()), torrentFolder + torrent.getFileName());
 			if (arquivo == null) {
 				torrent = null;
 			} else {
@@ -51,8 +68,8 @@ public class TorrentService extends BaseService {
 		return torrent;
 	}
 
-	private static List<Torrent> buscaUrlsTorrents(Episodio episodio, Boolean modoHD) throws XPathExpressionException, ClientProtocolException, IOException {
-		List<Torrent> torrents = new ArrayList<Torrent>();
+	private static List<TorrentFile> buscaUrlsTorrents(Episodio episodio, Boolean modoHD) throws XPathExpressionException, ClientProtocolException, IOException {
+		List<TorrentFile> torrents = new ArrayList<TorrentFile>();
 		
 		torrents.addAll(buscarUrlsTorrentsSimples(episodio, modoHD));
 		torrents.addAll(buscaUrlsTorrentsComplexas(episodio, modoHD));
@@ -60,11 +77,11 @@ public class TorrentService extends BaseService {
 		return torrents;
 	}
 
-	private static List<Torrent> buscarUrlsTorrentsSimples(Episodio episodio, Boolean modoHD) throws ClientProtocolException, IOException, XPathExpressionException {
+	private static List<TorrentFile> buscarUrlsTorrentsSimples(Episodio episodio, Boolean modoHD) throws ClientProtocolException, IOException, XPathExpressionException {
 		String nomeBusca = episodio.getTemporada().getSerie().getNome().replaceAll(" ", ".");
 		String codEpisodio = episodio.getNumeroFormatado();
 		
-		List<Torrent> torrents = new ArrayList<Torrent>();
+		List<TorrentFile> torrents = new ArrayList<TorrentFile>();
 		List<String> feedUrls = new ArrayList<String>();
 		
 		String urlKickassTo = "http://kickass.to/usearch/"
@@ -79,14 +96,11 @@ public class TorrentService extends BaseService {
 				+ URLEncoder.encode(String.valueOf(episodio.getTemporada().getNumero()), "UTF-8") + "&episode="
 				+ URLEncoder.encode(String.valueOf(episodio.getNumero()), "UTF-8") + "&video_format=&audio_format=&modifier=&mode=rss";
 		
-//		Log.d("teste", "urlKickassTo: ." + urlKickassTo + ".");
-//		Log.d("teste", "urlEztvIt: ." + urlEztvIt + ".");
-
 		feedUrls.add(urlKickassTo);
 		feedUrls.add(urlEztvIt);
 		
 		for(int i=0; i<feedUrls.size(); i++) {
-			Torrent torrent = null;
+			TorrentFile torrent = null;
 			DownloadFile file = downloadFile(feedUrls.get(i));
 			if(file == null) continue;
 			
@@ -103,8 +117,8 @@ public class TorrentService extends BaseService {
 		return torrents;
 	}
 
-	private static List<Torrent> buscaUrlsTorrentsComplexas(Episodio episodio, Boolean modoHD) throws XPathExpressionException, ClientProtocolException, IOException {
-		List<Torrent> lista = new ArrayList<Torrent>(); 
+	private static List<TorrentFile> buscaUrlsTorrentsComplexas(Episodio episodio, Boolean modoHD) throws XPathExpressionException, ClientProtocolException, IOException {
+		List<TorrentFile> lista = new ArrayList<TorrentFile>(); 
 		
 		String nomeBusca = episodio.getTemporada().getSerie().getNome().replaceAll(" ", ".");
 		String codEpisodio = episodio.getNumeroFormatado();
@@ -129,15 +143,12 @@ public class TorrentService extends BaseService {
 	        String match = "";  
 	        while (match != null) {  
 	            match = scan.findWithinHorizon(pattern, 0);
-//	            Log.d("teste", "match: " + match);
 	            if (match != null) {  
 	                String href = scan.match().group(0);
-//	                Log.d("teste", "href: " + href);
 	                href = href.replace("details", "download1");
 	                href += "&type=torrent";
-//	                Log.d("teste", "href: " + href);
 	                
-	                Torrent torrent = new Torrent();
+	                TorrentFile torrent = new TorrentFile();
 	                torrent.setLink(href);
 	                torrent.setFileName(fileName);
 	                
@@ -150,8 +161,8 @@ public class TorrentService extends BaseService {
 		return lista;
 	}
 
-	private static Torrent parseTorrent(Node item) {
-		Torrent torrent = new Torrent();
+	private static TorrentFile parseTorrent(Node item) {
+		TorrentFile torrent = new TorrentFile();
 		Element el = (Element) item;
 		
 		String fileName = el.getElementsByTagName("title").item(0).getTextContent();
@@ -168,9 +179,6 @@ public class TorrentService extends BaseService {
 		torrent.setFileName(fileName);
 		torrent.setLink(link);
 
-//		Log.d("teste", "torrent.fileName: " + torrent.getFileName());
-//		Log.d("teste", "torrent.link: " + torrent.getLink());
-		
 		return torrent;
 	}
 }

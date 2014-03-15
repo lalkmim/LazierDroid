@@ -1,17 +1,16 @@
 package br.com.pnpa.lazierdroid.entities;
 
-import jcifs.smb.SmbFile;
 
-public class Torrent {
+public class TorrentFile {
 	private String link;
 	private String fileName;
-	private SmbFile localFile;
+	private LazierFile localFile;
 	
-	public SmbFile getLocalFile() {
+	public LazierFile getLocalFile() {
 		return localFile;
 	}
-	public void setLocalFile(SmbFile localFile) {
-		this.localFile = localFile;
+	public void setLocalFile(LazierFile arquivo) {
+		this.localFile = arquivo;
 	}
 	public String getFileName() {
 		return fileName;

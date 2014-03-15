@@ -4,11 +4,11 @@ import java.sql.SQLException;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 import br.com.pnpa.lazierdroid.R;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
+import br.com.pnpa.lazierdroid.util.Log;
 
 import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.Dao;
@@ -21,7 +21,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	private static final String DATABASE_NAME = "lazierDroid.db";
 	// any time you make changes to your database objects, you may have to
 	// increase the database version
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 
 	// the DAO object we use to access the Serie table
 	private Dao<Serie, Integer> serieDao = null;
@@ -40,13 +40,13 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	@Override
 		
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
-		Log.i(DatabaseHelper.class.getName(), "onCreate");
+		Log.i("onCreate");
 		try {
 			TableUtils.createTable(connectionSource, Serie.class);
 			TableUtils.createTable(connectionSource, Temporada.class);
 			TableUtils.createTable(connectionSource, Episodio.class);
 		} catch (SQLException e) {
-			Log.e(DatabaseHelper.class.getName(), "Can't create database", e);
+			Log.e("Can't create database", e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -59,7 +59,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	@Override
 	public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
 		try {
-			Log.i(DatabaseHelper.class.getName(), "onUpgrade");
+			Log.i("onUpgrade");
 			if (oldVersion < DATABASE_VERSION) {
 				TableUtils.dropTable(connectionSource, Episodio.class, true);
 				TableUtils.dropTable(connectionSource, Temporada.class, true);
@@ -68,7 +68,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 				onCreate(db, connectionSource);
 			}
 		} catch (SQLException e) {
-			Log.e(DatabaseHelper.class.getName(), "Can't drop databases", e);
+			Log.e("Can't drop databases", e);
 			throw new RuntimeException(e);
 		}
 	}

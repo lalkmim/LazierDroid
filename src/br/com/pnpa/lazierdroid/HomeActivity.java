@@ -1,5 +1,8 @@
 package br.com.pnpa.lazierdroid;
 
+import org.apache.log4j.BasicConfigurator;
+
+import br.com.pnpa.lazierdroid.util.Util;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,6 +14,7 @@ public class HomeActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_home);
+		BasicConfigurator.configure();
 	}
 
 	@Override
@@ -28,6 +32,12 @@ public class HomeActivity extends BaseActivity {
 	public void onClickMinhasSeries(View v) {
 		Intent intent = new Intent(this, MinhasSeriesActivity.class);
     	startActivity(intent);
+	}
+
+	@Override
+	protected void onDestroy() {
+		Util.buildToast(this, "Teste");
+		super.onDestroy();
 	}
 
 }

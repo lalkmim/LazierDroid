@@ -3,16 +3,12 @@ package br.com.pnpa.lazierdroid;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.TextView;
-import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
-import br.com.pnpa.lazierdroid.entities.Temporada;
+import br.com.pnpa.lazierdroid.util.Log;
 
 public class DetalheSerieActivity extends BaseActivity {
 	private Serie serie;
@@ -37,28 +33,9 @@ public class DetalheSerieActivity extends BaseActivity {
 			expListViewTemporadas.setAdapter(adapter);
 			adapter.notifyDataSetChanged();
 			
-			expListViewTemporadas.setOnChildClickListener(new OnChildClickListener() {
-				@Override
-				public boolean onChildClick(ExpandableListView expListView, View v, int posTemporada, int posEpisodio, long id) {
-					Button button = (Button) v.findViewById(R.id.botao_status_video);
-					Temporada temporada = (Temporada) expListView.getAdapter().getItem(posTemporada);
-					final Episodio episodio = (Episodio) temporada.getEpisodios().toArray()[posEpisodio];
-					
-					Log.d("teste", "episodio.id: " + episodio.getId());
-
-					button.setOnClickListener(new Button.OnClickListener() {
-						public void onClick(View v) {
-							new DownloadTorrentTask().execute(episodio);
-						}
-					});
-
-			        return false;
-				}
-			});
-			
 			new LoadExternalImageTask().execute(new Integer[] {idSerie, R.id.imageView_detalhe_serie_capa});
 		} catch (Exception e) {
-			Log.e("ERROR", getString(R.string.msg_erro_carregar_dados_serie), e);
+			Log.e(getString(R.string.msg_erro_carregar_dados_serie), e);
 		}
 	}
 

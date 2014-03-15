@@ -43,7 +43,7 @@ public class Util {
 		return link;
 	}
 	
-	public static boolean isGZipped(InputStream in) {
+	public static boolean isGZipped(InputStream in) throws IOException {
 		if (!in.markSupported()) {
 			in = new BufferedInputStream(in);
 		}
@@ -58,7 +58,8 @@ public class Util {
 			e.printStackTrace(System.err);
 			return false;
 		}
-		
+
+		in.close();
 		return magic == GZIPInputStream.GZIP_MAGIC;
 	}
 

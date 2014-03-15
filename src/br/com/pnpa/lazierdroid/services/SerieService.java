@@ -1,4 +1,4 @@
-package br.com.pnpa.lazierdroid.service;
+package br.com.pnpa.lazierdroid.services;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,11 +15,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.util.Log;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
+import br.com.pnpa.lazierdroid.util.Log;
 
 import com.j256.ormlite.stmt.PreparedQuery;
 
@@ -36,7 +36,7 @@ public class SerieService extends BaseService {
 	
 	public static Serie pesquisaDetalhesSerie(Serie serie, DatabaseHelper helper) throws XPathExpressionException, ClientProtocolException, IOException, SQLException {
 		String url = "http://services.tvrage.com/feeds/full_show_info.php?sid=" + URLEncoder.encode(String.valueOf(serie.getId()), "UTF-8");
-		Log.i("pesquisaDetalhesSerie url", url);
+		Log.i("pesquisaDetalhesSerie.url: " + url);
 		InputStream in = downloadFile(url).getIs();
 		String expression = "/Show";
 		
@@ -119,7 +119,7 @@ public class SerieService extends BaseService {
 		serie.setAnoInicio(Integer.parseInt(el.getElementsByTagName("started").item(0).getTextContent()));
 		serie.setLink(el.getElementsByTagName("link").item(0).getTextContent());
 		
-		Log.d(SerieService.class.getName(), serie.getNome());
+		Log.d("serie.nome: " + serie.getNome());
 		
 		return serie;
 	}

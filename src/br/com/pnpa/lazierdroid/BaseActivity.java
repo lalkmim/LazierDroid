@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,13 +26,18 @@ import android.widget.TextView;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
-import br.com.pnpa.lazierdroid.entities.Torrent;
+import br.com.pnpa.lazierdroid.entities.TorrentFile;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
-import br.com.pnpa.lazierdroid.service.SerieService;
-import br.com.pnpa.lazierdroid.service.TorrentService;
+import br.com.pnpa.lazierdroid.services.SerieService;
+import br.com.pnpa.lazierdroid.services.TTorrentService;
+import br.com.pnpa.lazierdroid.services.TorrentService;
+import br.com.pnpa.lazierdroid.util.Log;
 import br.com.pnpa.lazierdroid.util.Util;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
+import com.turn.ttorrent.client.Client;
+import com.turn.ttorrent.client.Client.ClientState;
+import com.turn.ttorrent.client.SharedTorrent;
 
 public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	protected static final String NOME = "nome";
@@ -96,14 +100,14 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	}
 
 	protected class PesquisaSeriesTask extends AsyncTask<String, Void, Void> {
-		List<Serie> lista = null;
+		private List<Serie> lista = null;
 
 		@Override
 		protected Void doInBackground(String... nomeSerie) {
 			try {
 				lista = SerieService.pesquisaSerie(nomeSerie[0]);
 			} catch (Exception e) {
-				Log.e(this.getClass().getName(), getString(R.string.msg_erro_pesquisar_series), e);
+				Log.e(getString(R.string.msg_erro_pesquisar_series), e);
 			}
 			return null;
 		}
@@ -124,7 +128,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				listViewSeries.setVisibility(View.VISIBLE);
 				botaoIncluir.setVisibility(View.VISIBLE);
 			} catch (Exception e) {
-				Log.e(this.getClass().getName(), getString(R.string.msg_erro_pesquisar_series), e);
+				Log.e(getString(R.string.msg_erro_pesquisar_series), e);
 			}
 		}
 	}
@@ -138,9 +142,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				this.serie = SerieService.pesquisaDetalhesSerie(_serie[0],
 						getHelper());
 			} catch (Exception e) {
-				Log.e(this.getClass().getName(),
-						getString(R.string.msg_erro_pesquisar_detalhes_serie),
-						e);
+				Log.e(getString(R.string.msg_erro_pesquisar_detalhes_serie), e);
 			}
 			return null;
 		}
@@ -151,7 +153,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				super.onPostExecute(result);
 				Util.buildToast(getApplicationContext(), getString(R.string.msg_sucesso_inclusao_series)).show();
 			} catch (Exception e) {
-				Log.e("ERROR", getString(R.string.msg_erro_gravar_dados_serie), e);
+				Log.e(getString(R.string.msg_erro_gravar_dados_serie), e);
 			}
 		}
 	}
@@ -169,11 +171,11 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				idView = params[1];
 
 				Serie serie = getHelper().getSerieDao().queryForId(idSerie);
-				Log.d("imageURL", "imageURL: " + serie.getImageURL());
+				Log.d("imageURL: " + serie.getImageURL());
 				imagem = Util.loadImageBitmap(serie.getImageURL());
 			} catch (Exception e) {
 				String msgErro = getString(R.string.msg_erro_carregar_imagem_externa);
-				Log.e("ERROR", msgErro, e);
+				Log.e(msgErro, e);
 				Util.buildToast(getApplicationContext(), msgErro).show();
 			}
 
@@ -188,7 +190,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				imagemDetalheSerie.setImageBitmap(imagem);
 			} catch (Exception e) {
 				String msgErro = getString(R.string.msg_erro_carregar_imagem_externa);
-				Log.e("ERROR", msgErro, e);
+				Log.e(msgErro, e);
 				Util.buildToast(getApplicationContext(), msgErro).show();
 			}
 		}
@@ -206,17 +208,41 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				
 				Boolean modoHD = prefs.getBoolean("config_video_hd", false);
 				String torrentFolder = prefs.getString("config_torrent_folder", "");
+				String tempFolder = prefs.getString("config_temp_folder", "");
 				
 				if(!torrentFolder.substring(torrentFolder.length() - 1).equals("/"))
 					torrentFolder += "/";
 				
-				Torrent torrent = TorrentService.buscaTorrent(episodio, modoHD, torrentFolder);
+				TorrentFile torrent = TorrentService.buscaTorrent(episodio, modoHD, torrentFolder);
 				
 				episodio.setLinkTorrent(torrent.getLink());
+				episodio.setCaminhoTorrent(torrent.getLocalFile().getCaminhoArquivo());
 				
 				getHelper().getEpisodioDao().update(episodio);
+				Client client = TTorrentService.startTorrent(episodio, tempFolder);
+				Log.d("clientState: " + client.getState().ordinal());
+				int i=1;
+				for(String s : client.getTorrent().getFilenames()) {
+					Log.d("Arquivo " + i++ + ": " + s);
+				}
+				
+				while(client.getState().ordinal() < 4) {
+					Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
+					
+					SharedTorrent sharedTorrent = client.getTorrent();
+					Log.d("sharedTorrent.downloaded: " + sharedTorrent.getDownloaded());
+					Log.d("sharedTorrent.uploaded: " + sharedTorrent.getUploaded());
+					Log.d("sharedTorrent.completion: " + sharedTorrent.getCompletion());
+					if(client.getState().ordinal() > 1) {
+						Log.d("available / completed: " + sharedTorrent.getAvailablePieces().cardinality() + " / " + sharedTorrent.getCompletedPieces().cardinality());
+					}
+					
+					Thread.sleep(10000);
+				}
+				Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
+				
 			} catch (Exception e) {
-				Log.e(this.getClass().getCanonicalName(), "Erro ao processar torrent.", e);
+				Log.e("Erro ao processar torrent.", e);
 				this.exception = e;
 			}
 
@@ -226,7 +252,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			Log.d("teste", "exception: " + this.exception);
+			Log.d("exception: " + this.exception);
 			if(this.exception != null) {
 				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_baixar_torrent)).show();
 			}
@@ -275,11 +301,12 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			Button button = (Button) v.findViewById(R.id.botao_status_video);
 			
-			Log.d("teste", "episodio.id: " + episodio.getId());
+			Log.d("episodio.id: " + episodio.getId());
 
 			button.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					new DownloadTorrentTask().execute(episodio);
+//					new DownloadTorrentTask().execute(episodio);
+					new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
 				}
 			});
 			
