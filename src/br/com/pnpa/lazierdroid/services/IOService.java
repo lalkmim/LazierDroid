@@ -13,7 +13,6 @@ import jcifs.smb.SmbFile;
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
 import br.com.pnpa.lazierdroid.entities.LazierFile;
 import br.com.pnpa.lazierdroid.util.Log;
-import br.com.pnpa.lazierdroid.util.Util;
 
 public class IOService extends BaseService {
 	public static LazierFile salvarArquivo(String linkTorrent, String caminhoArquivo) throws Exception {
@@ -33,7 +32,7 @@ public class IOService extends BaseService {
 			is.close();
 		}
 		
-		if(Util.isGZipped(arquivo.getInputStream())) {
+		if(isGZipped(arquivo)) {
 			arquivo = extrairGZip(caminhoArquivo, arquivo);
 		}
 		
@@ -95,4 +94,25 @@ public class IOService extends BaseService {
         transferirDados(in, out);
         return tempFile;
     }
+	
+	public static boolean isGZipped(LazierFile arquivo) throws IOException {
+		InputStream in = arquivo.getInputStream();
+		if (!in.markSupported()) {
+			in = new BufferedInputStream(in);
+		}
+		
+		in.mark(2);
+		int magic = 0;
+		
+		try {
+			magic = in.read() & 0xff | ((in.read() << 8) & 0xff00);
+			in.reset();
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
+			return false;
+		}
+
+		in.close();
+		return magic == GZIPInputStream.GZIP_MAGIC;
+	}
 }

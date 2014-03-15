@@ -1,11 +1,8 @@
 package br.com.pnpa.lazierdroid.util;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.util.zip.GZIPInputStream;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -42,25 +39,4 @@ public class Util {
 		
 		return link;
 	}
-	
-	public static boolean isGZipped(InputStream in) throws IOException {
-		if (!in.markSupported()) {
-			in = new BufferedInputStream(in);
-		}
-		
-		in.mark(2);
-		int magic = 0;
-		
-		try {
-			magic = in.read() & 0xff | ((in.read() << 8) & 0xff00);
-			in.reset();
-		} catch (IOException e) {
-			e.printStackTrace(System.err);
-			return false;
-		}
-
-		in.close();
-		return magic == GZIPInputStream.GZIP_MAGIC;
-	}
-
 }
