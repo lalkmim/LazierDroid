@@ -2,6 +2,7 @@ package br.com.pnpa.lazierdroid.services;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
+
+import jcifs.smb.SmbException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.w3c.dom.Element;
@@ -21,6 +24,8 @@ import br.com.pnpa.lazierdroid.entities.LazierFile;
 import br.com.pnpa.lazierdroid.entities.TorrentFile;
 import br.com.pnpa.lazierdroid.util.Log;
 import br.com.pnpa.lazierdroid.util.Util;
+
+import com.turn.ttorrent.client.SharedTorrent;
 
 public class TorrentService extends BaseService {
 
@@ -91,7 +96,7 @@ public class TorrentService extends BaseService {
 				+ "720p%20verified:1/?field=seeders&sorder=desc&rss=1";
 		
 		String urlEztvIt = "https://ezrss.it/search/index.php?show_name="
-				+ URLEncoder.encode(nomeBusca, "UTF-8") + "%20&date=&quality="
+				+ URLEncoder.encode(nomeBusca, "UTF-8").replaceAll("\\.", "+") + "&date=&quality="
 				+ (modoHD ? "720P" : "HDTV&quality_exact=true") + "&release_group=&episode_title=&season="
 				+ URLEncoder.encode(String.valueOf(episodio.getTemporada().getNumero()), "UTF-8") + "&episode="
 				+ URLEncoder.encode(String.valueOf(episodio.getNumero()), "UTF-8") + "&video_format=&audio_format=&modifier=&mode=rss";
@@ -101,6 +106,7 @@ public class TorrentService extends BaseService {
 		
 		for(int i=0; i<feedUrls.size(); i++) {
 			TorrentFile torrent = null;
+			Log.d("url: " + feedUrls.get(i));
 			DownloadFile file = downloadFile(feedUrls.get(i));
 			if(file == null) continue;
 			
@@ -127,6 +133,8 @@ public class TorrentService extends BaseService {
 				+ URLEncoder.encode(nomeBusca, "UTF-8") + "%20"
 				+ codEpisodio + "%20" 
 				+ (modoHD ? "" : "-") + "720p";
+		
+		Log.d("url: " + urlTorrentzEu);
 		
 		InputStream is = downloadFile(urlTorrentzEu).getIs();
 		
@@ -180,5 +188,70 @@ public class TorrentService extends BaseService {
 		torrent.setLink(link);
 
 		return torrent;
+	}
+
+	public static String organizarArquivos(SharedTorrent torrent, String caminhoDestino, String pastaTorrent) throws MalformedURLException, SmbException {
+		String caminhoArquivoVideo = null;		
+		List<String> videoExtensions = getVideoExtensions();
+		List<String> listaDeExclusao = new ArrayList<String>();
+		
+		for(String caminhoArquivo : torrent.getFilenames()) {
+			LazierFile arquivo = new LazierFile(pastaTorrent + caminhoArquivo);
+			String nomeArquivo = caminhoArquivo;
+			String extensaoArquivo = nomeArquivo.substring(nomeArquivo.lastIndexOf(".") + 1).toLowerCase();
+			if(videoExtensions.contains(extensaoArquivo)) {
+				if(caminhoArquivo.indexOf("/") >= 0) {
+					String pasta = caminhoArquivo.substring(0, caminhoArquivo.lastIndexOf("/") + 1);
+					nomeArquivo = caminhoArquivo.substring(caminhoArquivo.lastIndexOf("/") + 1);
+					listaDeExclusao.add(pastaTorrent + pasta);
+				}
+				LazierFile arquivoTemporario = new LazierFile(caminhoDestino + nomeArquivo);
+				Log.d("Movendo arquivo '" + arquivo.getCaminhoArquivo() + "' para '" + arquivoTemporario.getCaminhoArquivo() + "'");
+				arquivo.renameTo(arquivoTemporario);
+				caminhoArquivoVideo = arquivo.getCaminhoArquivo();
+			} else {
+				listaDeExclusao.add(pastaTorrent + caminhoArquivo);
+			}
+		}
+		
+		for(String arquivoParaExcluir : listaDeExclusao) {
+			LazierFile fileTemp = new LazierFile(arquivoParaExcluir);
+			if(fileTemp.exists()) {
+				fileTemp.delete();
+			}
+		}
+		
+		String nomeVideo = caminhoArquivoVideo.substring(caminhoArquivoVideo.lastIndexOf("/") + 1);
+		
+		return nomeVideo;
+	}
+
+	private static List<String> getVideoExtensions() {
+		List<String> extensions = new ArrayList<String>();
+		
+		extensions.add("mp4");
+		extensions.add("avi");
+		extensions.add("divx");
+		extensions.add("mkv");
+		extensions.add("mpg");
+		extensions.add("mpeg");
+		
+		return extensions;
+	}
+
+	public static String corrigirNomeVideo(TorrentFile torrent, String nomeVideo, String caminhoDestino) throws SmbException, MalformedURLException {
+		String torrentFileName = torrent.getFileName();
+		String extensaoVideo = nomeVideo.substring(nomeVideo.lastIndexOf(".") + 1);
+		
+		String nomeVideoCorreto = torrentFileName.substring(0, torrentFileName.lastIndexOf(".")) + "." + extensaoVideo;
+		
+		LazierFile arquivo = new LazierFile(caminhoDestino + nomeVideo);
+		LazierFile arquivoDestino = new LazierFile(caminhoDestino + nomeVideoCorreto);
+		
+		Log.d("Corrigindo nome do video, de '" + arquivo.getCaminhoArquivo() + "' para '" + arquivoDestino.getCaminhoArquivo() + "'");
+		
+		arquivo.renameTo(arquivoDestino);
+		
+		return nomeVideoCorreto;
 	}
 }

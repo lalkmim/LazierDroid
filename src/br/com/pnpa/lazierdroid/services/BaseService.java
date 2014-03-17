@@ -86,17 +86,3 @@ public class BaseService {
 		return file;
 	}
 }
-
-/*
-HTTP/1.1 200 OK
-Content-Disposition: attachment; filename="Sherlock.1x01.A.Study.In.Pink.HDTV.XviD-FoV.[eztv].torrent"
-Content-type: application/x-bittorrent
-Server: lighttpd - Kicking Apache's ASS!
-Content-Length: 28622
-Date: Tue, 04 Mar 2014 21:22:08 GMT
-X-Varnish: 1754900050
-Age: 0
-Via: 1.1 varnish
-Connection: keep-alive
-
-*/

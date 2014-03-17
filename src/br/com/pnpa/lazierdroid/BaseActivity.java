@@ -197,39 +197,43 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	}
 
 	protected class DownloadTorrentTask extends AsyncTask<Episodio, Void, Void> {
-		Exception exception = null;
+		private Exception exception = null;
+		private Episodio episodio = null;
 		
 		@Override
 		protected Void doInBackground(Episodio... params) {
 			try {
-				Episodio episodio = params[0];
+				this.episodio = params[0];
 				
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				
 				Boolean modoHD = prefs.getBoolean("config_video_hd", false);
-				String torrentFolder = prefs.getString("config_torrent_folder", "");
-				String tempFolder = prefs.getString("config_temp_folder", "");
+				String pastaTorrent = prefs.getString("config_torrent_folder", "");
+				String pastaTemp = prefs.getString("config_temp_folder", "");
 				
-				if(!torrentFolder.substring(torrentFolder.length() - 1).equals("/"))
-					torrentFolder += "/";
+				if(!pastaTorrent.substring(pastaTorrent.length() - 1).equals("/"))
+					pastaTorrent += "/";
 				
-				TorrentFile torrent = TorrentService.buscaTorrent(episodio, modoHD, torrentFolder);
+				if(!pastaTemp.substring(pastaTemp.length() - 1).equals("/"))
+					pastaTemp += "/";
+				
+				TorrentFile torrent = TorrentService.buscaTorrent(episodio, modoHD, pastaTorrent);
 				
 				episodio.setLinkTorrent(torrent.getLink());
 				episodio.setCaminhoTorrent(torrent.getLocalFile().getCaminhoArquivo());
 				
 				getHelper().getEpisodioDao().update(episodio);
-				Client client = TTorrentService.startTorrent(episodio, tempFolder);
+				Client client = TTorrentService.startTorrent(episodio, pastaTemp);
 				Log.d("clientState: " + client.getState().ordinal());
 				int i=1;
 				for(String s : client.getTorrent().getFilenames()) {
 					Log.d("Arquivo " + i++ + ": " + s);
 				}
 				
-				while(client.getState().ordinal() < 4) {
+				SharedTorrent sharedTorrent = client.getTorrent();
+				while(client.getState().ordinal() < 4 && sharedTorrent.getCompletion() < 100) {
 					Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
 					
-					SharedTorrent sharedTorrent = client.getTorrent();
 					Log.d("sharedTorrent.downloaded: " + sharedTorrent.getDownloaded());
 					Log.d("sharedTorrent.uploaded: " + sharedTorrent.getUploaded());
 					Log.d("sharedTorrent.completion: " + sharedTorrent.getCompletion());
@@ -239,8 +243,11 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 					
 					Thread.sleep(10000);
 				}
+				sharedTorrent.stop();
 				Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
-				
+				String nomeVideo = TorrentService.organizarArquivos(sharedTorrent, pastaTemp, pastaTorrent);
+				nomeVideo = TorrentService.corrigirNomeVideo(torrent, nomeVideo, pastaTemp);
+				this.episodio.setNomeVideo(nomeVideo);
 			} catch (Exception e) {
 				Log.e("Erro ao processar torrent.", e);
 				this.exception = e;
@@ -252,8 +259,15 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			Log.d("exception: " + this.exception);
+			
+			try {
+				getHelper().getEpisodioDao().update(episodio);
+			} catch (Exception e) {
+				this.exception = e;
+			}
+			
 			if(this.exception != null) {
+				Log.d("exception: " + this.exception);
 				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_baixar_torrent)).show();
 			}
 		}
@@ -301,11 +315,10 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			Button button = (Button) v.findViewById(R.id.botao_status_video);
 			
-			Log.d("episodio.id: " + episodio.getId());
+//			Log.d("episodio.id: " + episodio.getId());
 
 			button.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-//					new DownloadTorrentTask().execute(episodio);
 					new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
 				}
 			});

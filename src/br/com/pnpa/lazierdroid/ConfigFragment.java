@@ -1,5 +1,6 @@
 package br.com.pnpa.lazierdroid;
 
+import br.com.pnpa.lazierdroid.R;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 

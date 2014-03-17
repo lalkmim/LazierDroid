@@ -2,6 +2,7 @@ package br.com.pnpa.lazierdroid;
 
 import org.apache.log4j.BasicConfigurator;
 
+import br.com.pnpa.lazierdroid.R;
 import br.com.pnpa.lazierdroid.util.Util;
 import android.content.Intent;
 import android.os.Bundle;

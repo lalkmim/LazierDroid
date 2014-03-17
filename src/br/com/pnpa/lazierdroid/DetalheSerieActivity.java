@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import br.com.pnpa.lazierdroid.R;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.util.Log;
 
