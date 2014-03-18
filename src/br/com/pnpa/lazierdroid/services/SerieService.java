@@ -27,6 +27,9 @@ public class SerieService extends BaseService {
 
 	public static List<Serie> pesquisaSerie(String nomeSerie) throws IllegalStateException, IOException, XmlPullParserException, XPathExpressionException {
 		String url = "http://services.tvrage.com/feeds/search.php?show=" + URLEncoder.encode(nomeSerie, "UTF-8");
+		
+		Log.d("pesquisaSerie.url: " + url);
+		
 		InputStream in = downloadFile(url).getIs();
 		String expression = "/Results/show";
 		List<Serie> lista = parseSeries(in, expression); 

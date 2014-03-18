@@ -17,6 +17,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -43,19 +46,20 @@ public class BaseService {
 
 	protected static DownloadFile downloadFile(String url) throws IOException, ClientProtocolException {
 		HttpResponse resp = null;
-		try {
-			HttpGet uri = new HttpGet(url);
-			uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
-			DefaultHttpClient client = new DefaultHttpClient();
-			resp = client.execute(uri);
-	
-			StatusLine status = resp.getStatusLine();
-			if (status.getStatusCode() != 200) {
-			    Log.d("HTTP error, invalid server status code: " + resp.getStatusLine());
-			    return null;
-			}
-		} catch(Exception e) {
-			return null;
+		HttpGet uri = new HttpGet(url);
+		uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
+
+		HttpParams httpParameters = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParameters, 10000);
+		HttpConnectionParams.setSoTimeout(httpParameters, 10000);
+
+		DefaultHttpClient client = new DefaultHttpClient(httpParameters);
+		resp = client.execute(uri);
+
+		StatusLine status = resp.getStatusLine();
+		if (status.getStatusCode() != 200) {
+		    Log.d("HTTP error, invalid server status code: " + resp.getStatusLine());
+		    return null;
 		}
 		
 		DownloadFile file = new DownloadFile();

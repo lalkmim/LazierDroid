@@ -2,7 +2,6 @@ package br.com.pnpa.lazierdroid.services;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +9,6 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
-
-import jcifs.smb.SmbException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.w3c.dom.Element;
@@ -144,29 +141,58 @@ public class TorrentService extends BaseService {
 			Element el = (Element) nodes.item(0);
 			String fileName = el.getElementsByTagName("title").item(0).getTextContent().replaceAll(" ", ".") + ".torrent";
 			String link = el.getElementsByTagName("link").item(0).getTextContent();
-			is = downloadFile(link).getIs();
-			Pattern pattern = Pattern.compile("(http:\\/\\/www.bt\\-chat\\.com\\/details\\.php\\?id=[0-9]+)", Pattern.MULTILINE);
+			String html = IOService.lerArquivo(downloadFile(link).getIs());
 			
-			Scanner scan = new Scanner(is, "UTF-8");  
-	        String match = "";  
-	        while (match != null) {  
-	            match = scan.findWithinHorizon(pattern, 0);
-	            if (match != null) {  
-	                String href = scan.match().group(0);
-	                href = href.replace("details", "download1");
-	                href += "&type=torrent";
-	                
-	                TorrentFile torrent = new TorrentFile();
-	                torrent.setLink(href);
-	                torrent.setFileName(fileName);
-	                
-	                lista.add(torrent);  
-	            }  
-	        }  
-
+			processarBTChat(lista, fileName, html);
+			processarTorLock(lista, fileName, html);
 		}
 		
 		return lista;
+	}
+
+	private static void processarBTChat(List<TorrentFile> lista, String fileName, String html) {
+		Pattern pattern = Pattern.compile("(http:\\/\\/www.bt\\-chat\\.com\\/details\\.php\\?id=[0-9]+)", Pattern.MULTILINE);
+		
+		Scanner scan = new Scanner(html);  
+		String match = "";  
+		while (match != null) {  
+		    match = scan.findWithinHorizon(pattern, 0);
+		    if (match != null) {  
+		        String href = scan.match().group(0);
+		        href = href.replace("details", "download1");
+		        href += "&type=torrent";
+		        
+		        TorrentFile torrent = new TorrentFile();
+		        torrent.setLink(href);
+		        torrent.setFileName(fileName);
+		        
+		        lista.add(torrent);  
+		    }  
+		}
+	}
+	
+	private static void processarTorLock(List<TorrentFile> lista, String fileName, String html) throws IOException {
+		Pattern pattern = Pattern.compile("http:\\/\\/www\\.torlock\\.com\\/torrent\\/([0-9]+)\\/[^\\\"]+", Pattern.MULTILINE);
+		
+		Scanner scan = new Scanner(html);  
+		String match = "";  
+		while (match != null) {  
+		    match = scan.findWithinHorizon(pattern, 0);
+		    if (match != null) {  
+		        String href = scan.match().group(0);
+		        href = href.replace("/torrent/", "/tor/");
+		        href = href.substring(0, href.lastIndexOf("/"));
+		        href += ".torrent";
+		        
+		        Log.d("href: " + href);
+		        
+		        TorrentFile torrent = new TorrentFile();
+		        torrent.setLink(href);
+		        torrent.setFileName(fileName);
+		        
+		        lista.add(torrent);  
+		    }  
+		}
 	}
 
 	private static TorrentFile parseTorrent(Node item) {
@@ -190,7 +216,7 @@ public class TorrentService extends BaseService {
 		return torrent;
 	}
 
-	public static String organizarArquivos(SharedTorrent torrent, String caminhoDestino, String pastaTorrent) throws MalformedURLException, SmbException {
+	public static String organizarArquivos(SharedTorrent torrent, String caminhoDestino, String pastaTorrent) throws Exception {
 		String caminhoArquivoVideo = null;		
 		List<String> videoExtensions = getVideoExtensions();
 		List<String> listaDeExclusao = new ArrayList<String>();
@@ -207,7 +233,10 @@ public class TorrentService extends BaseService {
 				}
 				LazierFile arquivoTemporario = new LazierFile(caminhoDestino + nomeArquivo);
 				Log.d("Movendo arquivo '" + arquivo.getCaminhoArquivo() + "' para '" + arquivoTemporario.getCaminhoArquivo() + "'");
-				arquivo.renameTo(arquivoTemporario);
+				boolean renameOK = arquivo.renameTo(arquivoTemporario);
+				if(!renameOK) {
+					throw new Exception("Erro ao mover arquivo.");
+				}
 				caminhoArquivoVideo = arquivo.getCaminhoArquivo();
 			} else {
 				listaDeExclusao.add(pastaTorrent + caminhoArquivo);
@@ -221,9 +250,7 @@ public class TorrentService extends BaseService {
 			}
 		}
 		
-		String nomeVideo = caminhoArquivoVideo.substring(caminhoArquivoVideo.lastIndexOf("/") + 1);
-		
-		return nomeVideo;
+		return caminhoArquivoVideo;
 	}
 
 	private static List<String> getVideoExtensions() {
@@ -239,18 +266,22 @@ public class TorrentService extends BaseService {
 		return extensions;
 	}
 
-	public static String corrigirNomeVideo(TorrentFile torrent, String nomeVideo, String caminhoDestino) throws SmbException, MalformedURLException {
+	public static String corrigirNomeVideo(TorrentFile torrent, String caminhoVideo, String caminhoDestino) throws Exception {
 		String torrentFileName = torrent.getFileName();
-		String extensaoVideo = nomeVideo.substring(nomeVideo.lastIndexOf(".") + 1);
+		String extensaoVideo = caminhoVideo.substring(caminhoVideo.lastIndexOf(".") + 1);
 		
 		String nomeVideoCorreto = torrentFileName.substring(0, torrentFileName.lastIndexOf(".")) + "." + extensaoVideo;
 		
-		LazierFile arquivo = new LazierFile(caminhoDestino + nomeVideo);
+		LazierFile arquivo = new LazierFile(caminhoVideo);
 		LazierFile arquivoDestino = new LazierFile(caminhoDestino + nomeVideoCorreto);
 		
 		Log.d("Corrigindo nome do video, de '" + arquivo.getCaminhoArquivo() + "' para '" + arquivoDestino.getCaminhoArquivo() + "'");
 		
-		arquivo.renameTo(arquivoDestino);
+		boolean renameOK = arquivo.renameTo(arquivoDestino);
+		
+		if(!renameOK) {
+			throw new Exception("Erro ao alterar o nome do arquivo.");
+		}
 		
 		return nomeVideoCorreto;
 	}

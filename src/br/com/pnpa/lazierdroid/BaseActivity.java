@@ -101,12 +101,14 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 
 	protected class PesquisaSeriesTask extends AsyncTask<String, Void, Void> {
 		private List<Serie> lista = null;
+		private Exception exception = null;
 
 		@Override
 		protected Void doInBackground(String... nomeSerie) {
 			try {
 				lista = SerieService.pesquisaSerie(nomeSerie[0]);
 			} catch (Exception e) {
+				this.exception = e;
 				Log.e(getString(R.string.msg_erro_pesquisar_series), e);
 			}
 			return null;
@@ -128,7 +130,12 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				listViewSeries.setVisibility(View.VISIBLE);
 				botaoIncluir.setVisibility(View.VISIBLE);
 			} catch (Exception e) {
-				Log.e(getString(R.string.msg_erro_pesquisar_series), e);
+				this.exception = e;
+			}
+
+			if (this.exception != null) {
+				Log.d("exception: " + this.exception);
+				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_pesquisar_series)).show();
 			}
 		}
 	}
@@ -223,7 +230,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				episodio.setCaminhoTorrent(torrent.getLocalFile().getCaminhoArquivo());
 				
 				getHelper().getEpisodioDao().update(episodio);
-				Client client = TTorrentService.startTorrent(episodio, pastaTemp);
+				Client client = TTorrentService.startTorrent(episodio, pastaTorrent);
 				Log.d("clientState: " + client.getState().ordinal());
 				int i=1;
 				for(String s : client.getTorrent().getFilenames()) {
@@ -245,8 +252,10 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				}
 				sharedTorrent.stop();
 				Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
+				
 				String nomeVideo = TorrentService.organizarArquivos(sharedTorrent, pastaTemp, pastaTorrent);
 				nomeVideo = TorrentService.corrigirNomeVideo(torrent, nomeVideo, pastaTemp);
+				
 				this.episodio.setNomeVideo(nomeVideo);
 			} catch (Exception e) {
 				Log.e("Erro ao processar torrent.", e);
@@ -261,7 +270,9 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			super.onPostExecute(result);
 			
 			try {
-				getHelper().getEpisodioDao().update(episodio);
+				if(this.exception != null) {
+					getHelper().getEpisodioDao().update(episodio);
+				}
 			} catch (Exception e) {
 				this.exception = e;
 			}
@@ -315,8 +326,6 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			Button button = (Button) v.findViewById(R.id.botao_status_video);
 			
-//			Log.d("episodio.id: " + episodio.getId());
-
 			button.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
 					new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
