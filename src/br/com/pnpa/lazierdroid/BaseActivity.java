@@ -23,11 +23,14 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import br.com.pnpa.lazierdroid.R;
 import br.com.pnpa.lazierdroid.entities.Episodio;
+import br.com.pnpa.lazierdroid.entities.LegendaFile;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
 import br.com.pnpa.lazierdroid.entities.TorrentFile;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
+import br.com.pnpa.lazierdroid.services.LegendaService;
 import br.com.pnpa.lazierdroid.services.SerieService;
 import br.com.pnpa.lazierdroid.services.TTorrentService;
 import br.com.pnpa.lazierdroid.services.TorrentService;
@@ -36,7 +39,6 @@ import br.com.pnpa.lazierdroid.util.Util;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
 import com.turn.ttorrent.client.Client;
-import com.turn.ttorrent.client.Client.ClientState;
 import com.turn.ttorrent.client.SharedTorrent;
 
 public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
@@ -231,32 +233,66 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				
 				getHelper().getEpisodioDao().update(episodio);
 				Client client = TTorrentService.startTorrent(episodio, pastaTorrent);
-				Log.d("clientState: " + client.getState().ordinal());
-				int i=1;
-				for(String s : client.getTorrent().getFilenames()) {
-					Log.d("Arquivo " + i++ + ": " + s);
-				}
-				
+
 				SharedTorrent sharedTorrent = client.getTorrent();
 				while(client.getState().ordinal() < 4 && sharedTorrent.getCompletion() < 100) {
-					Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
-					
-					Log.d("sharedTorrent.downloaded: " + sharedTorrent.getDownloaded());
-					Log.d("sharedTorrent.uploaded: " + sharedTorrent.getUploaded());
-					Log.d("sharedTorrent.completion: " + sharedTorrent.getCompletion());
-					if(client.getState().ordinal() > 1) {
-						Log.d("available / completed: " + sharedTorrent.getAvailablePieces().cardinality() + " / " + sharedTorrent.getCompletedPieces().cardinality());
-					}
-					
 					Thread.sleep(10000);
 				}
 				sharedTorrent.stop();
-				Log.d("clientState: " + client.getState().ordinal() + " - " + ClientState.values()[client.getState().ordinal()]);
 				
 				String nomeVideo = TorrentService.organizarArquivos(sharedTorrent, pastaTemp, pastaTorrent);
 				nomeVideo = TorrentService.corrigirNomeVideo(torrent, nomeVideo, pastaTemp);
 				
 				this.episodio.setNomeVideo(nomeVideo);
+				this.episodio.setCaminhoVideo(pastaTemp + nomeVideo);
+			} catch (Exception e) {
+				Log.e("Erro ao processar torrent.", e);
+				this.exception = e;
+			}
+
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			
+			try {
+				if(this.exception == null) {
+					getHelper().getEpisodioDao().update(this.episodio);
+				}
+			} catch (Exception e) {
+				this.exception = e;
+			}
+			
+			if(this.exception != null) {
+				Log.d("exception: " + this.exception);
+				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_baixar_torrent)).show();
+			}
+		}
+	}
+	
+	protected class DownloadLegendaTask extends AsyncTask<Episodio, Void, Void> {
+		private Exception exception = null;
+		private Episodio episodio = null;
+		
+		@Override
+		protected Void doInBackground(Episodio... params) {
+			try {
+				this.episodio = params[0];
+				
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				String pastaTemp = prefs.getString("config_temp_folder", "");
+				
+				if(!pastaTemp.substring(pastaTemp.length() - 1).equals("/"))
+					pastaTemp += "/";
+				
+				LegendaFile legenda = LegendaService.buscaLegenda(episodio, pastaTemp);
+				
+				episodio.setLinkLegenda(legenda.getLink());
+				episodio.setCaminhoLegenda(legenda.getLocalFile().getCaminhoArquivo());
+				
+//				LegendaService.organizarArquivos(episodio);
 			} catch (Exception e) {
 				Log.e("Erro ao processar torrent.", e);
 				this.exception = e;
@@ -271,7 +307,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			try {
 				if(this.exception != null) {
-					getHelper().getEpisodioDao().update(episodio);
+//					getHelper().getEpisodioDao().update(episodio);
 				}
 			} catch (Exception e) {
 				this.exception = e;
@@ -288,22 +324,19 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		private final List<Temporada> temporadas;
 		private final LayoutInflater inflater;
 
-		public TemporadasEpisodiosAdapter(Context context,
-				List<Temporada> _temporadas) {
+		public TemporadasEpisodiosAdapter(Context context, List<Temporada> _temporadas) {
 			this.inflater = LayoutInflater.from(context);
 			this.temporadas = _temporadas;
 		}
 
 		@Override
 		public Object getChild(int posTemporada, int posEpisodio) {
-			return new ArrayList<Episodio>(temporadas.get(posTemporada)
-					.getEpisodios()).get(posEpisodio);
+			return new ArrayList<Episodio>(temporadas.get(posTemporada).getEpisodios()).get(posEpisodio);
 		}
 
 		@Override
 		public long getChildId(int posTemporada, int posEpisodio) {
-			return new ArrayList<Episodio>(temporadas.get(posTemporada)
-					.getEpisodios()).get(posEpisodio).getId();
+			return new ArrayList<Episodio>(temporadas.get(posTemporada).getEpisodios()).get(posEpisodio).getId();
 		}
 
 		@Override
@@ -324,11 +357,22 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			itemDetalhes.setText(episodio.getNumeroFormatado() + " - " + episodio.getDate());
 			itemStatus.setText("Vídeo: " + episodio.getStatusVideo() + " / Legenda: " + episodio.getStatusLegenda());
 			
-			Button button = (Button) v.findViewById(R.id.botao_status_video);
+			Button botaoBaixar = (Button) v.findViewById(R.id.botao_baixar);
+			Button botaoAssistir = (Button) v.findViewById(R.id.botao_assistir);
 			
-			button.setOnClickListener(new Button.OnClickListener() {
+			botaoBaixar.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
+					if(episodio.getStatusVideo().equals("OK")) {
+						new DownloadLegendaTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
+					} else {
+						new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
+					}
+				}
+			});
+			
+			botaoAssistir.setOnClickListener(new Button.OnClickListener() {
+				public void onClick(View v) {
+					// Disparar action para abrir arquivo de vídeo
 				}
 			});
 			

@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 
-import jcifs.smb.SmbFile;
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
 import br.com.pnpa.lazierdroid.entities.LazierFile;
 import br.com.pnpa.lazierdroid.util.Log;
@@ -86,13 +85,30 @@ public class IOService extends BaseService {
 		}
 	}
 	
-	public static File arquivoNaRede(String caminhoNaRede) throws IOException {
-		InputStream in = new SmbFile(caminhoNaRede).getInputStream();
-        final File tempFile = File.createTempFile("file", "tmp");
+//	public static File arquivoNaRede(String caminhoNaRede) throws IOException {
+//		InputStream in = new SmbFile(caminhoNaRede).getInputStream();
+//        final File tempFile = File.createTempFile("file", "tmp");
+//        tempFile.deleteOnExit();
+//        OutputStream out = new FileOutputStream(tempFile);
+//        transferirDados(in, out);
+//        return tempFile;
+//    }
+	
+	public static LazierFile downloadTemporario(String link) throws IOException {
+		DownloadFile downloadFile = downloadFile(link);
+		InputStream in = downloadFile.getIs();
+		
+		String nomeArquivo = downloadFile.getFileName();
+		String extensaoArquivo = nomeArquivo.substring(nomeArquivo.lastIndexOf("."));
+		
+        final File tempFile = File.createTempFile("file", extensaoArquivo);
+        
         tempFile.deleteOnExit();
+        
         OutputStream out = new FileOutputStream(tempFile);
         transferirDados(in, out);
-        return tempFile;
+        
+        return new LazierFile(tempFile.getAbsolutePath());
     }
 	
 	public static boolean isGZipped(LazierFile arquivo) throws IOException {

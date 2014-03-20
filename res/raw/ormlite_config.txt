@@ -1,5 +1,5 @@
 #
-# generated on 2014/03/09 01:31:00
+# generated on 2014/03/19 12:48:43
 #
 # --table-start--
 dataClass=br.com.pnpa.lazierdroid.entities.Serie
@@ -100,7 +100,16 @@ fieldName=caminhoTorrent
 fieldName=nomeVideo
 # --field-end--
 # --field-start--
+fieldName=caminhoVideo
+# --field-end--
+# --field-start--
 fieldName=nomeLegenda
+# --field-end--
+# --field-start--
+fieldName=caminhoLegenda
+# --field-end--
+# --field-start--
+fieldName=linkLegenda
 # --field-end--
 # --table-fields-end--
 # --table-end--

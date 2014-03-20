@@ -49,6 +49,7 @@ public class SerieService extends BaseService {
 	}
 
 	private static Serie parseDetalheSerie(Serie serie, InputStream in, String expression, DatabaseHelper helper) throws XPathExpressionException, SQLException {
+		// TODO Utilizar JSoup
 		NodeList nodes = xmlParser(in, expression);
 		Element el = (Element) nodes.item(0);
 		serie.setImageURL(el.getElementsByTagName("image").item(0).getTextContent());
@@ -65,6 +66,7 @@ public class SerieService extends BaseService {
 	private static Temporada parseTemporada(Node item, Serie serie, DatabaseHelper helper) throws SQLException {
 		Temporada temporada = new Temporada();
 		Element el = (Element) item;
+		// TODO Utilizar JSoup
 		temporada.setNumero(Integer.parseInt(el.getAttribute("no")));
 		temporada.setSerie(serie);
 		
@@ -88,6 +90,7 @@ public class SerieService extends BaseService {
 		
 		Element el = (Element) item;
 		episodio.setTemporada(temporada);
+		// TODO Utilizar JSoup
 		episodio.setNumero(Integer.parseInt(el.getElementsByTagName("seasonnum").item(0).getFirstChild().getNodeValue()));
 		episodio.setTitle(el.getElementsByTagName("title").item(0).getFirstChild().getNodeValue());
 		episodio.setLink(el.getElementsByTagName("link").item(0).getFirstChild().getNodeValue());
@@ -116,7 +119,7 @@ public class SerieService extends BaseService {
 	private static Serie parseSerie(Node item) {
 		Serie serie = new Serie();
 		Element el = (Element) item; 
-		
+		// TODO Utilizar JSoup
 		serie.setId(Integer.parseInt(el.getElementsByTagName("showid").item(0).getTextContent()));
 		serie.setNome(el.getElementsByTagName("name").item(0).getTextContent());
 		serie.setAnoInicio(Integer.parseInt(el.getElementsByTagName("started").item(0).getTextContent()));

@@ -132,7 +132,7 @@ public class TorrentService extends BaseService {
 				+ (modoHD ? "" : "-") + "720p";
 		
 		Log.d("url: " + urlTorrentzEu);
-		
+		// TODO Utilizar JSoup
 		InputStream is = downloadFile(urlTorrentzEu).getIs();
 		
 		String expression = "/rss/channel/item";
@@ -198,7 +198,7 @@ public class TorrentService extends BaseService {
 	private static TorrentFile parseTorrent(Node item) {
 		TorrentFile torrent = new TorrentFile();
 		Element el = (Element) item;
-		
+		// TODO Utilizar JSoup
 		String fileName = el.getElementsByTagName("title").item(0).getTextContent();
 		if(fileName.indexOf("[") >= 0) {
 			fileName = fileName.substring(0, fileName.indexOf("["));

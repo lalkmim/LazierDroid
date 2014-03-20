@@ -33,7 +33,16 @@ public class Episodio {
 	private String nomeVideo;
 	
 	@DatabaseField(canBeNull = true)
+	private String caminhoVideo;
+	
+	@DatabaseField(canBeNull = true)
 	private String nomeLegenda;
+	
+	@DatabaseField(canBeNull = true)
+	private String caminhoLegenda;
+	
+	@DatabaseField(canBeNull = true)
+	private String linkLegenda;
 
 	public int getId() {
 		return id;
@@ -144,5 +153,29 @@ public class Episodio {
 
 	public void setCaminhoTorrent(String caminhoTorrent) {
 		this.caminhoTorrent = caminhoTorrent;
+	}
+
+	public String getCaminhoVideo() {
+		return caminhoVideo;
+	}
+
+	public void setCaminhoVideo(String caminhoVideo) {
+		this.caminhoVideo = caminhoVideo;
+	}
+
+	public String getCaminhoLegenda() {
+		return caminhoLegenda;
+	}
+
+	public void setCaminhoLegenda(String caminhoLegenda) {
+		this.caminhoLegenda = caminhoLegenda;
+	}
+
+	public String getLinkLegenda() {
+		return linkLegenda;
+	}
+
+	public void setLinkLegenda(String linkLegenda) {
+		this.linkLegenda = linkLegenda;
 	}
 }
