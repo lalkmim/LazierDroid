@@ -3,14 +3,23 @@ package br.com.pnpa.lazierdroid.services;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
 import br.com.pnpa.lazierdroid.entities.LazierFile;
+import br.com.pnpa.lazierdroid.entities.LegendaFile;
 import br.com.pnpa.lazierdroid.util.Log;
 
 public class IOService extends BaseService {
@@ -31,7 +40,7 @@ public class IOService extends BaseService {
 			is.close();
 		}
 		
-		if(isGZipped(arquivo)) {
+		if(isGZIP(arquivo)) {
 			arquivo = extrairGZip(caminhoArquivo, arquivo);
 		}
 		
@@ -111,7 +120,7 @@ public class IOService extends BaseService {
         return new LazierFile(tempFile.getAbsolutePath());
     }
 	
-	public static boolean isGZipped(LazierFile arquivo) throws IOException {
+	public static boolean isGZIP(LazierFile arquivo) throws IOException {
 		InputStream in = arquivo.getInputStream();
 		if (!in.markSupported()) {
 			in = new BufferedInputStream(in);
@@ -131,4 +140,112 @@ public class IOService extends BaseService {
 		in.close();
 		return magic == GZIPInputStream.GZIP_MAGIC;
 	}
+	
+    private static File createFileFromRAR(FileHeader fh, String destination) {
+    	return createFileFromRAR(fh, new File(destination));
+    }
+    
+    private static File createFileFromRAR(FileHeader fh, File destination) {
+		File f = null;
+		String name = null;
+		if (fh.isFileHeader() && fh.isUnicode()) {
+		    name = fh.getFileNameW();
+		} else {
+		    name = fh.getFileNameString();
+		}
+		f = new File(destination, name);
+		if (!f.exists()) {
+		    try {
+			f = makeFileFromRAR(destination, name);
+		    } catch (IOException e) {
+			Log.e("error creating the new file: " + f.getName(), e);
+		    }
+		}
+		return f;
+    }
+
+    private static File makeFileFromRAR(File destination, String name) throws IOException {
+		String[] dirs = name.split("\\\\");
+		if (dirs == null) {
+		    return null;
+		}
+		
+		String path = "";
+		int size = dirs.length;
+		
+		if (size == 1) {
+		    return new File(destination, name);
+		} else if (size > 1) {
+		    for (int i = 0; i < dirs.length - 1; i++) {
+				path = path + File.separator + dirs[i];
+				new File(destination, path).mkdir();
+		    }
+		    path = path + File.separator + dirs[dirs.length - 1];
+		    File f = new File(destination, path);
+		    f.createNewFile();
+		    
+		    return f;
+		} else {
+		    return null;
+		}
+    }
+
+    public static LegendaFile extrairArquivoRARPeloNome(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, FileNotFoundException {
+		Archive arch = new Archive(arquivoLocal);
+		FileHeader fh = null;
+		LazierFile arquivoExtraido = null;
+		LegendaFile legendaFile = null;
+		
+		while((fh = arch.nextFileHeader()) != null) {
+			String arquivoCompactado = fh.getFileNameString();
+			Log.d("arquivoCompactado: " + arquivoCompactado);
+			
+			if(arquivoCompactado.equals(nomeProcurado)) {
+				arquivoExtraido = new LazierFile(createFileFromRAR(fh, tempFolder).getAbsolutePath());
+				OutputStream stream = arquivoExtraido.getOutputStream();
+				arch.extractFile(fh, stream);
+				stream.close();
+			}
+		}
+		
+		arch.close();
+		
+		if(arquivoExtraido != null) {
+			legendaFile = new LegendaFile();
+			legendaFile.setLocalFile(new LazierFile(arquivoExtraido.getCaminhoArquivo()));
+			legendaFile.setFileName(nomeProcurado);
+		}
+		
+		return legendaFile;
+	}
+    
+    public static LegendaFile extrairArquivoZIPPeloNome(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, FileNotFoundException {
+    	ZipInputStream zis = new ZipInputStream(new FileInputStream(arquivoLocal));
+
+    	ZipEntry ze = null;
+		LazierFile arquivoExtraido = null;
+		LegendaFile legendaFile = null;
+		
+		while((ze = zis.getNextEntry()) != null) {
+			String arquivoCompactado = ze.getName();
+			Log.d("arquivoCompactado: " + arquivoCompactado);
+			
+			if(arquivoCompactado.equals(nomeProcurado)) {
+				arquivoExtraido = new LazierFile(tempFolder + arquivoCompactado);
+				OutputStream stream = arquivoExtraido.getOutputStream();
+				transferirDados(zis, stream);
+				stream.close();
+			}
+		}
+		
+		zis.close();
+		
+		if(arquivoExtraido != null) {
+			legendaFile = new LegendaFile();
+			legendaFile.setLocalFile(new LazierFile(arquivoExtraido.getCaminhoArquivo()));
+			legendaFile.setFileName(nomeProcurado);
+		}
+		
+		return legendaFile;
+    }
 }

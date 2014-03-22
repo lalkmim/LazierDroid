@@ -120,9 +120,9 @@ public class LegendaService extends BaseService {
 		Log.d("extensao: " + extensao);
 		
 		if(extensao.equalsIgnoreCase("rar")) {
-			legendaFile = RARService.extrairArquivoPeloNome(tempFolder, nomeProcurado, lazierFile.getArquivoLocal());
-//		} else if(extensao.equalsIgnoreCase("zip")) {
-			
+			legendaFile = IOService.extrairArquivoRARPeloNome(tempFolder, nomeProcurado, lazierFile.getArquivoLocal());
+		} else if(extensao.equalsIgnoreCase("zip")) {
+			legendaFile = IOService.extrairArquivoZIPPeloNome(tempFolder, nomeProcurado, lazierFile.getArquivoLocal());
 		}
 		
 		if(legendaFile != null) {
