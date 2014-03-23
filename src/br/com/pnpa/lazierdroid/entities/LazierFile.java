@@ -27,47 +27,47 @@ public class LazierFile {
 	}
 		
 	public SmbFile getArquivoNaRede() {
-		return arquivoNaRede;
+		return this.arquivoNaRede;
 	}
 	public void setArquivoNaRede(SmbFile arquivoNaRede) {
 		this.arquivoNaRede = arquivoNaRede;
 	}
 	public File getArquivoLocal() {
-		return arquivoLocal;
+		return this.arquivoLocal;
 	}
 	public void setArquivoLocal(File arquivoLocal) {
 		this.arquivoLocal = arquivoLocal;
 	}
 	public String getCaminhoArquivo() {
-		return caminhoArquivo;
+		return this.caminhoArquivo;
 	}
 	public void setCaminhoArquivo(String caminhoArquivo) {
 		this.caminhoArquivo = caminhoArquivo;
 	}
 	
 	public InputStream getInputStream() throws IOException {
-		if(arquivoNaRede != null) {
-			return arquivoNaRede.getInputStream();
+		if(this.arquivoNaRede != null) {
+			return this.arquivoNaRede.getInputStream();
 		} else {
-			return new FileInputStream(arquivoLocal);
+			return new FileInputStream(this.arquivoLocal);
 		}
 	}
 	
 	public OutputStream getOutputStream() throws IOException {
-		if(arquivoNaRede != null) {
-			return arquivoNaRede.getOutputStream();
+		if(this.arquivoNaRede != null) {
+			return this.arquivoNaRede.getOutputStream();
 		} else {
-			return new FileOutputStream(arquivoLocal);
+			return new FileOutputStream(this.arquivoLocal);
 		}
 	}
 
 	public boolean renameTo(LazierFile arquivoTemporario) throws SmbException {
 		boolean retorno = false;
-		if (arquivoNaRede != null) {
-			arquivoNaRede.renameTo(arquivoTemporario.getArquivoNaRede());
+		if (this.arquivoNaRede != null) {
+			this.arquivoNaRede.renameTo(arquivoTemporario.getArquivoNaRede());
 			retorno = true;
 		} else {
-			retorno = arquivoLocal.renameTo(arquivoTemporario.getArquivoLocal());
+			retorno = this.arquivoLocal.renameTo(arquivoTemporario.getArquivoLocal());
 		}
 		
 		this.caminhoArquivo = arquivoTemporario.getCaminhoArquivo();
@@ -76,18 +76,26 @@ public class LazierFile {
 	}
 
 	public void delete() throws SmbException {
-		if(arquivoNaRede != null) {
-			arquivoNaRede.delete();
+		if(this.arquivoNaRede != null) {
+			this.arquivoNaRede.delete();
 		} else {
-			arquivoLocal.delete();
+			this.arquivoLocal.delete();
 		}
 	}
 
 	public boolean exists() throws SmbException {
-		if(arquivoNaRede != null) {
-			return arquivoNaRede.exists();
+		if(this.arquivoNaRede != null) {
+			return this.arquivoNaRede.exists();
 		} else {
-			return arquivoLocal.exists();
+			return this.arquivoLocal.exists();
+		}
+	}
+
+	public void mkdirs() throws SmbException {
+		if(this.arquivoNaRede != null) {
+			this.arquivoNaRede.mkdirs();
+		} else {
+			this.arquivoLocal.mkdirs();
 		}
 	}	
 }

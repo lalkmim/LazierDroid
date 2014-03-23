@@ -283,16 +283,21 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				String pastaTemp = prefs.getString("config_temp_folder", "");
+				String pastaFinal = prefs.getString("config_video_folder", "");
 				
 				if(!pastaTemp.substring(pastaTemp.length() - 1).equals("/"))
 					pastaTemp += "/";
+				
+				if(!pastaFinal.substring(pastaFinal.length() - 1).equals("/"))
+					pastaFinal += "/";
 				
 				LegendaFile legenda = LegendaService.buscaLegenda(episodio, pastaTemp);
 				
 				episodio.setLinkLegenda(legenda.getLink());
 				episodio.setCaminhoLegenda(legenda.getLocalFile().getCaminhoArquivo());
+				episodio.setNomeLegenda(legenda.getFileName());
 				
-//				LegendaService.organizarArquivos(episodio);
+				LegendaService.organizarArquivos(episodio, pastaFinal);
 			} catch (Exception e) {
 				Log.e("Erro ao processar torrent.", e);
 				this.exception = e;
@@ -307,7 +312,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			try {
 				if(this.exception != null) {
-//					getHelper().getEpisodioDao().update(episodio);
+					getHelper().getEpisodioDao().update(episodio);
 				}
 			} catch (Exception e) {
 				this.exception = e;

@@ -1,9 +1,12 @@
 package br.com.pnpa.lazierdroid.services;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URLEncoder;
 
 import javax.xml.xpath.XPathExpressionException;
+
+import jcifs.smb.SmbException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.jsoup.Jsoup;
@@ -89,7 +92,7 @@ public class LegendaService extends BaseService {
 		
 		Log.d("url: " + urlLegendasTV);
 		
-		Document doc = Jsoup.connect(urlLegendasTV).get();
+		Document doc = Jsoup.connect(urlLegendasTV).timeout(0).post();
 		Elements items = doc.select(".destaque .f_left p a");
 		Element el = items.get(0);
 		
@@ -123,6 +126,15 @@ public class LegendaService extends BaseService {
 			legendaFile = IOService.extrairArquivoRARPeloNome(tempFolder, nomeProcurado, lazierFile.getArquivoLocal());
 		} else if(extensao.equalsIgnoreCase("zip")) {
 			legendaFile = IOService.extrairArquivoZIPPeloNome(tempFolder, nomeProcurado, lazierFile.getArquivoLocal());
+		} else if(extensao.equalsIgnoreCase("srt")) {
+			if(!nomeArquivo.equals(nomeProcurado)) {
+				LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
+				lazierFile.renameTo(arquivoCorreto);
+			}
+			
+			legendaFile = new LegendaFile();
+			legendaFile.setLocalFile(lazierFile);
+			legendaFile.setFileName(nomeProcurado);
 		}
 		
 		if(legendaFile != null) {
@@ -130,6 +142,26 @@ public class LegendaService extends BaseService {
 		}
 		
 		return legendaFile;
+	}
+
+	public static void organizarArquivos(Episodio episodio, String pastaFinal) throws MalformedURLException, SmbException {
+		String nomeSerie = episodio.getTemporada().getSerie().getNome();
+		String nomeTemporada = "Season " + (episodio.getTemporada().getNumero() < 10 ? "0" : "") + episodio.getTemporada().getNumero();
+		String caminhoFinal = pastaFinal + nomeSerie + "/" + nomeTemporada + "/";
+		
+		Log.d("caminhoFinal: " + caminhoFinal);
+		
+		LazierFile diretorioFinal = new LazierFile(caminhoFinal);
+		diretorioFinal.mkdirs();
+		
+		LazierFile arquivoVideo = new LazierFile(episodio.getCaminhoVideo());
+		LazierFile arquivoLegenda = new LazierFile(episodio.getCaminhoLegenda());
+		
+		LazierFile arquivoVideoFinal = new LazierFile(caminhoFinal + episodio.getNomeVideo());
+		LazierFile arquivoLegendaFinal = new LazierFile(caminhoFinal + episodio.getNomeLegenda());
+		
+		arquivoVideo.renameTo(arquivoVideoFinal);
+		arquivoLegenda.renameTo(arquivoLegendaFinal);
 	}
 
 	

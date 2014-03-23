@@ -9,18 +9,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import com.github.junrar.Archive;
-import com.github.junrar.exception.RarException;
-import com.github.junrar.rarfile.FileHeader;
-
+import jcifs.smb.SmbException;
 import br.com.pnpa.lazierdroid.entities.DownloadFile;
 import br.com.pnpa.lazierdroid.entities.LazierFile;
 import br.com.pnpa.lazierdroid.entities.LegendaFile;
 import br.com.pnpa.lazierdroid.util.Log;
+
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 
 public class IOService extends BaseService {
 	public static LazierFile salvarArquivo(String linkTorrent, String caminhoArquivo) throws Exception {
@@ -191,24 +193,12 @@ public class IOService extends BaseService {
     }
 
     public static LegendaFile extrairArquivoRARPeloNome(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, FileNotFoundException {
-		Archive arch = new Archive(arquivoLocal);
-		FileHeader fh = null;
-		LazierFile arquivoExtraido = null;
 		LegendaFile legendaFile = null;
 		
-		while((fh = arch.nextFileHeader()) != null) {
-			String arquivoCompactado = fh.getFileNameString();
-			Log.d("arquivoCompactado: " + arquivoCompactado);
-			
-			if(arquivoCompactado.equals(nomeProcurado)) {
-				arquivoExtraido = new LazierFile(createFileFromRAR(fh, tempFolder).getAbsolutePath());
-				OutputStream stream = arquivoExtraido.getOutputStream();
-				arch.extractFile(fh, stream);
-				stream.close();
-			}
+		LazierFile arquivoExtraido = extrairArquivoRARPeloNomeExato(tempFolder, nomeProcurado, arquivoLocal);
+		if(arquivoExtraido == null) {
+			arquivoExtraido = extrairArquivoRARPeloGrupo(tempFolder, nomeProcurado, arquivoLocal);
 		}
-		
-		arch.close();
 		
 		if(arquivoExtraido != null) {
 			legendaFile = new LegendaFile();
@@ -218,27 +208,73 @@ public class IOService extends BaseService {
 		
 		return legendaFile;
 	}
-    
-    public static LegendaFile extrairArquivoZIPPeloNome(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, FileNotFoundException {
-    	ZipInputStream zis = new ZipInputStream(new FileInputStream(arquivoLocal));
 
-    	ZipEntry ze = null;
+	private static LazierFile extrairArquivoRARPeloGrupo(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, MalformedURLException, SmbException {
 		LazierFile arquivoExtraido = null;
-		LegendaFile legendaFile = null;
+		FileHeader fh = null;
 		
-		while((ze = zis.getNextEntry()) != null) {
-			String arquivoCompactado = ze.getName();
-			Log.d("arquivoCompactado: " + arquivoCompactado);
+		Archive arch = new Archive(arquivoLocal);
+		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase();
+		
+		while((fh = arch.nextFileHeader()) != null) {
+			String nomeArquivoCompactado = fh.getFileNameString();
+			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
 			
-			if(arquivoCompactado.equals(nomeProcurado)) {
-				arquivoExtraido = new LazierFile(tempFolder + arquivoCompactado);
+			if(nomeArquivoCompactado.toLowerCase().endsWith(grupoProcurado)) {
+				arquivoExtraido = new LazierFile(createFileFromRAR(fh, tempFolder).getAbsolutePath());
+				LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
+				arquivoExtraido.renameTo(arquivoCorreto);
+				
 				OutputStream stream = arquivoExtraido.getOutputStream();
-				transferirDados(zis, stream);
+				arch.extractFile(fh, stream);
 				stream.close();
+				
+				break;
 			}
 		}
 		
-		zis.close();
+		arch.close();
+		
+		return arquivoExtraido;
+	}
+
+	private static LazierFile extrairArquivoRARPeloNomeExato(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, MalformedURLException {
+		LazierFile arquivoExtraido = null;
+		FileHeader fh = null;
+		
+		Archive arch = new Archive(arquivoLocal);
+		
+		while((fh = arch.nextFileHeader()) != null) {
+			String nomeArquivoCompactado = fh.getFileNameString();
+			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
+			
+			if(nomeArquivoCompactado.equalsIgnoreCase(nomeProcurado)) {
+				arquivoExtraido = new LazierFile(createFileFromRAR(fh, tempFolder).getAbsolutePath());
+				OutputStream stream = arquivoExtraido.getOutputStream();
+				arch.extractFile(fh, stream);
+				stream.close();
+				
+				if(!nomeArquivoCompactado.equals(nomeProcurado)) {
+					LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
+					arquivoExtraido.renameTo(arquivoCorreto);
+				}
+				
+				break;
+			}
+		}
+		
+		arch.close();
+		
+		return arquivoExtraido;
+	}
+    
+    public static LegendaFile extrairArquivoZIPPeloNome(String tempFolder, String nomeProcurado, File arquivoLocal) throws RarException, IOException, FileNotFoundException {
+		LegendaFile legendaFile = null;
+		
+		LazierFile arquivoExtraido = extrairArquivoZIPPeloNomeExato(tempFolder, nomeProcurado, arquivoLocal);
+		if(arquivoExtraido == null) {
+			arquivoExtraido = extrairArquivoZIPPeloGrupo(tempFolder, nomeProcurado, arquivoLocal);
+		}
 		
 		if(arquivoExtraido != null) {
 			legendaFile = new LegendaFile();
@@ -248,4 +284,63 @@ public class IOService extends BaseService {
 		
 		return legendaFile;
     }
+
+	private static LazierFile extrairArquivoZIPPeloGrupo(String tempFolder, String nomeProcurado, File arquivoLocal) throws FileNotFoundException, IOException, MalformedURLException, SmbException {
+		LazierFile arquivoExtraido = null;
+		ZipEntry ze = null;
+		
+		ZipInputStream zis = new ZipInputStream(new FileInputStream(arquivoLocal));
+		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase();
+		
+		while((ze = zis.getNextEntry()) != null) {
+			String nomeArquivoCompactado = ze.getName();
+			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
+			
+			if(nomeArquivoCompactado.toLowerCase().endsWith(grupoProcurado)) {
+				arquivoExtraido = new LazierFile(tempFolder + nomeArquivoCompactado);
+				LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
+				arquivoExtraido.renameTo(arquivoCorreto);
+				
+				OutputStream stream = arquivoExtraido.getOutputStream();
+				transferirDados(zis, stream);
+				stream.close();
+				
+				break;
+			}
+		}
+		
+		zis.close();
+		
+		return arquivoExtraido;
+	}
+
+	private static LazierFile extrairArquivoZIPPeloNomeExato(String tempFolder, String nomeProcurado, File arquivoLocal) throws FileNotFoundException, IOException, MalformedURLException {
+		LazierFile arquivoExtraido = null;
+		ZipEntry ze = null;
+    	
+		ZipInputStream zis = new ZipInputStream(new FileInputStream(arquivoLocal));
+
+    	while((ze = zis.getNextEntry()) != null) {
+			String nomeArquivoCompactado = ze.getName();
+			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
+			
+			if(nomeArquivoCompactado.equalsIgnoreCase(nomeProcurado)) {
+				arquivoExtraido = new LazierFile(tempFolder + nomeArquivoCompactado);
+				OutputStream stream = arquivoExtraido.getOutputStream();
+				transferirDados(zis, stream);
+				stream.close();
+				
+				if(!nomeArquivoCompactado.equals(nomeProcurado)) {
+					LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
+					arquivoExtraido.renameTo(arquivoCorreto);
+				}
+				
+				break;
+			}
+		}
+		
+		zis.close();
+		
+		return arquivoExtraido;
+	}
 }

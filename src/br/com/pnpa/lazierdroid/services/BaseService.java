@@ -50,8 +50,8 @@ public class BaseService {
 		uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
 
 		HttpParams httpParameters = new BasicHttpParams();
-		HttpConnectionParams.setConnectionTimeout(httpParameters, 10000);
-		HttpConnectionParams.setSoTimeout(httpParameters, 10000);
+		HttpConnectionParams.setConnectionTimeout(httpParameters, 20000);
+		HttpConnectionParams.setSoTimeout(httpParameters, 20000);
 
 		DefaultHttpClient client = new DefaultHttpClient(httpParameters);
 		resp = client.execute(uri);
