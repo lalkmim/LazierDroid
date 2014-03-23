@@ -293,11 +293,13 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 				
 				LegendaFile legenda = LegendaService.buscaLegenda(episodio, pastaTemp);
 				
-				episodio.setLinkLegenda(legenda.getLink());
-				episodio.setCaminhoLegenda(legenda.getLocalFile().getCaminhoArquivo());
-				episodio.setNomeLegenda(legenda.getFileName());
+				this.episodio.setLinkLegenda(legenda.getLink());
+				this.episodio.setCaminhoLegenda(legenda.getLocalFile().getCaminhoArquivo());
+				this.episodio.setNomeLegenda(legenda.getFileName());
 				
 				LegendaService.organizarArquivos(episodio, pastaFinal);
+				
+				getHelper().getEpisodioDao().update(this.episodio);
 			} catch (Exception e) {
 				Log.e("Erro ao processar torrent.", e);
 				this.exception = e;
@@ -309,14 +311,6 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			
-			try {
-				if(this.exception != null) {
-					getHelper().getEpisodioDao().update(episodio);
-				}
-			} catch (Exception e) {
-				this.exception = e;
-			}
 			
 			if(this.exception != null) {
 				Log.d("exception: " + this.exception);
@@ -360,10 +354,24 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 
 			itemName.setText(episodio.getTitle());
 			itemDetalhes.setText(episodio.getNumeroFormatado() + " - " + episodio.getDate());
-			itemStatus.setText("Vídeo: " + episodio.getStatusVideo() + " / Legenda: " + episodio.getStatusLegenda());
+			if("OK".equals(episodio.getStatusLegenda())) {
+				itemStatus.setText("Status: OK");
+			} else if("OK".equals(episodio.getStatusVideo())) {
+				itemStatus.setText("Status: Falta Legenda");
+			} else {
+				itemStatus.setText("Status: Falta Vídeo e Legenda");
+			}
 			
 			Button botaoBaixar = (Button) v.findViewById(R.id.botao_baixar);
 			Button botaoAssistir = (Button) v.findViewById(R.id.botao_assistir);
+			
+			if("OK".equals(episodio.getStatusVideo()) && "OK".equals(episodio.getStatusLegenda())) {
+				botaoBaixar.setEnabled(false);
+				botaoAssistir.setEnabled(true);
+			} else {
+				botaoBaixar.setEnabled(true);
+				botaoAssistir.setEnabled(false);
+			}
 			
 			botaoBaixar.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
@@ -377,7 +385,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			botaoAssistir.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					// Disparar action para abrir arquivo de vídeo
+					// TODO Disparar action para abrir arquivo de vídeo
 				}
 			});
 			

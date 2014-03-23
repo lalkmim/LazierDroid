@@ -141,10 +141,11 @@ public class Episodio {
 	}
 	
 	public String getStatusLegenda() {
-		if(this.getNomeLegenda() != null)
+		if(this.getNomeLegenda() != null) {
 			return "OK";
-		else
+		} else {
 			return "Pendente";
+		}
 	}
 
 	public String getCaminhoTorrent() {
