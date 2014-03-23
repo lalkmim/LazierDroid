@@ -162,6 +162,9 @@ public class LegendaService extends BaseService {
 		
 		arquivoVideo.renameTo(arquivoVideoFinal);
 		arquivoLegenda.renameTo(arquivoLegendaFinal);
+		
+		episodio.setCaminhoVideo(arquivoVideo.getCaminhoArquivo());
+		episodio.setCaminhoLegenda(arquivoLegenda.getCaminhoArquivo());
 	}
 
 	

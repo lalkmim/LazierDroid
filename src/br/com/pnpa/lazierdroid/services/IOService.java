@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.Locale;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -214,13 +215,13 @@ public class IOService extends BaseService {
 		FileHeader fh = null;
 		
 		Archive arch = new Archive(arquivoLocal);
-		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase();
+		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase(Locale.US);
 		
 		while((fh = arch.nextFileHeader()) != null) {
 			String nomeArquivoCompactado = fh.getFileNameString();
 			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
 			
-			if(nomeArquivoCompactado.toLowerCase().endsWith(grupoProcurado)) {
+			if(nomeArquivoCompactado.toLowerCase(Locale.US).endsWith(grupoProcurado)) {
 				arquivoExtraido = new LazierFile(createFileFromRAR(fh, tempFolder).getAbsolutePath());
 				LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
 				arquivoExtraido.renameTo(arquivoCorreto);
@@ -290,13 +291,13 @@ public class IOService extends BaseService {
 		ZipEntry ze = null;
 		
 		ZipInputStream zis = new ZipInputStream(new FileInputStream(arquivoLocal));
-		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase();
+		String grupoProcurado = nomeProcurado.substring(nomeProcurado.lastIndexOf("-") + 1).toLowerCase(Locale.US);
 		
 		while((ze = zis.getNextEntry()) != null) {
 			String nomeArquivoCompactado = ze.getName();
 			Log.d("arquivoCompactado: " + nomeArquivoCompactado);
 			
-			if(nomeArquivoCompactado.toLowerCase().endsWith(grupoProcurado)) {
+			if(nomeArquivoCompactado.toLowerCase(Locale.US).endsWith(grupoProcurado)) {
 				arquivoExtraido = new LazierFile(tempFolder + nomeArquivoCompactado);
 				LazierFile arquivoCorreto = new LazierFile(tempFolder + nomeProcurado);
 				arquivoExtraido.renameTo(arquivoCorreto);

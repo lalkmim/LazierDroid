@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -23,7 +24,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import br.com.pnpa.lazierdroid.R;
 import br.com.pnpa.lazierdroid.entities.Episodio;
 import br.com.pnpa.lazierdroid.entities.LegendaFile;
 import br.com.pnpa.lazierdroid.entities.Serie;
@@ -385,7 +385,14 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			botaoAssistir.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					// TODO Disparar action para abrir arquivo de vídeo
+					try {
+					    Intent intent = new Intent(Intent.ACTION_VIEW);
+					    intent.setDataAndType(Uri.parse(episodio.getCaminhoVideo()), "video/*");
+						startActivity(intent);
+					} catch (Exception e) {
+						Log.e("Nao foi possivel abrir o arquivo de video.", e);
+					}
+				    
 				}
 			});
 			
