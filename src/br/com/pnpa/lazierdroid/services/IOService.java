@@ -26,8 +26,8 @@ import com.github.junrar.exception.RarException;
 import com.github.junrar.rarfile.FileHeader;
 
 public class IOService extends BaseService {
-	public static LazierFile salvarArquivo(String linkTorrent, String caminhoArquivo) throws Exception {
-		DownloadFile file = downloadFile(linkTorrent);
+	public static LazierFile salvarArquivo(String link, String caminhoArquivo) throws Exception {
+		DownloadFile file = downloadFile(link);
 		if(file == null) {
 			return null;
 		}
@@ -44,22 +44,17 @@ public class IOService extends BaseService {
 		}
 		
 		if(isGZIP(arquivo)) {
-			arquivo = extrairGZip(caminhoArquivo, arquivo);
+			arquivo = extrairGZIP(caminhoArquivo, arquivo);
 		}
 		
 		return arquivo;
 	}
 
-	private static LazierFile extrairGZip(String caminhoArquivo, LazierFile arquivo) throws Exception {
+	private static LazierFile extrairGZIP(String caminhoArquivo, LazierFile arquivo) throws Exception {
 		String caminhoArquivoTemporario = caminhoArquivo + ".gz";
 		
 		LazierFile arquivoTemporario = new LazierFile(caminhoArquivoTemporario);
-		Log.d("arquivo.caminhoArquivo (antes): " + arquivo.getCaminhoArquivo());
-		Log.d("arquivoTemporario.caminhoArquivo (antes): " + arquivoTemporario.getCaminhoArquivo());
 		boolean renameRealizado = arquivo.renameTo(arquivoTemporario);
-		Log.d("arquivo.caminhoArquivo (depois): " + arquivo.getCaminhoArquivo());
-		Log.d("arquivoTemporario.caminhoArquivo (depois): " + arquivoTemporario.getCaminhoArquivo());
-		Log.d("renameRealizado: " + renameRealizado);
 		
 		if(!renameRealizado) {
 			throw new Exception("Nao foi possivel renomear o arquivo.");
@@ -343,5 +338,9 @@ public class IOService extends BaseService {
 		zis.close();
 		
 		return arquivoExtraido;
+	}
+
+	public static void copiarArquivo(LazierFile origem, LazierFile destino) throws IOException {
+		transferirDados(origem.getInputStream(), destino.getOutputStream());
 	}
 }

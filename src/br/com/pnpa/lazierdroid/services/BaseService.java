@@ -48,6 +48,10 @@ public class BaseService {
 		HttpResponse resp = null;
 		HttpGet uri = new HttpGet(url);
 		uri.setHeader("User-Agent", "Mozilla/5.0 Firefox/26.0");
+		String baseUrl = baseURL(url);
+		if(!baseUrl.contains("torcache")) { 
+			uri.setHeader("Referer", baseURL(url));
+		}
 
 		HttpParams httpParameters = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(httpParameters, 20000);
@@ -88,5 +92,14 @@ public class BaseService {
 		}
 		
 		return file;
+	}
+
+	private static String baseURL(String url) {
+		String baseUrl = url;
+		
+		baseUrl = baseUrl.substring(0, baseUrl.indexOf("/", baseUrl.indexOf("//") + 2));
+		Log.d("baseUrl: " + baseUrl);
+		
+		return baseUrl;
 	}
 }

@@ -24,10 +24,7 @@ public class TTorrentService extends BaseService {
 
 		client.setMaxDownloadRate(50.0);
 		client.setMaxUploadRate(50.0);
-
-		Log.d("antes");
 		client.download();
-		Log.d("depois");
 		
 		return client;
 	}
