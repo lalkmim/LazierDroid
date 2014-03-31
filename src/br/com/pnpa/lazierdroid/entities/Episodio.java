@@ -4,7 +4,9 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "episodios")
-public class Episodio {
+public class Episodio extends LazierEntity {
+	private static final long serialVersionUID = 1L;
+
 	@DatabaseField(generatedId = true)
 	private int id;
 	

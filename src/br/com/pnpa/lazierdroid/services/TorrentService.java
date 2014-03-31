@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -27,24 +28,6 @@ import com.turn.ttorrent.client.SharedTorrent;
 public class TorrentService extends BaseService {
 
 	public static TorrentFile buscaTorrent(Episodio episodio, Boolean modoHD, String torrentFolder) throws Exception {
-		if(episodio.getCaminhoTorrent() != null) {
-			LazierFile arquivoTemp = new LazierFile(episodio.getCaminhoTorrent());
-			if(arquivoTemp.exists()) {
-				TorrentFile torrentFile = new TorrentFile();
-				torrentFile.setLocalFile(arquivoTemp);
-				
-				String fileName = arquivoTemp.getCaminhoArquivo();
-				if(fileName.indexOf("/") >= 0) {
-					fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
-				}
-				
-				torrentFile.setFileName(fileName);
-				torrentFile.setLink(episodio.getLinkTorrent());
-				
-				return torrentFile;
-			}
-		}
-		
 		List<TorrentFile> torrents = buscaUrlsTorrents(episodio, modoHD);
 		
 		int i = 0;
@@ -224,7 +207,7 @@ public class TorrentService extends BaseService {
 		for(String caminhoArquivo : torrent.getFilenames()) {
 			LazierFile arquivo = new LazierFile(pastaTorrent + caminhoArquivo);
 			String nomeArquivo = caminhoArquivo;
-			String extensaoArquivo = nomeArquivo.substring(nomeArquivo.lastIndexOf(".") + 1).toLowerCase();
+			String extensaoArquivo = nomeArquivo.substring(nomeArquivo.lastIndexOf(".") + 1).toLowerCase(Locale.US);
 			if(videoExtensions.contains(extensaoArquivo)) {
 				if(caminhoArquivo.indexOf("/") >= 0) {
 					String pasta = caminhoArquivo.substring(0, caminhoArquivo.lastIndexOf("/") + 1);

@@ -1,5 +1,6 @@
 package br.com.pnpa.lazierdroid.model.helper;
 
+import java.io.Serializable;
 import java.sql.SQLException;
 
 import android.content.Context;
@@ -15,7 +16,9 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
+public class DatabaseHelper extends OrmLiteSqliteOpenHelper implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	// name of the database file for your application -- change to something
 	// appropriate for your app
 	private static final String DATABASE_NAME = "lazierDroid.db";

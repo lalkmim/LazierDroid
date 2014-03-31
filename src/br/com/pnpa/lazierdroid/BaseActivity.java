@@ -7,11 +7,9 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,21 +23,15 @@ import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import br.com.pnpa.lazierdroid.entities.Episodio;
-import br.com.pnpa.lazierdroid.entities.LegendaFile;
 import br.com.pnpa.lazierdroid.entities.Serie;
 import br.com.pnpa.lazierdroid.entities.Temporada;
-import br.com.pnpa.lazierdroid.entities.TorrentFile;
 import br.com.pnpa.lazierdroid.model.helper.DatabaseHelper;
-import br.com.pnpa.lazierdroid.services.LegendaService;
 import br.com.pnpa.lazierdroid.services.SerieService;
-import br.com.pnpa.lazierdroid.services.TTorrentService;
-import br.com.pnpa.lazierdroid.services.TorrentService;
+import br.com.pnpa.lazierdroid.services.background.DownloadVideoLegendaService;
 import br.com.pnpa.lazierdroid.util.Log;
 import br.com.pnpa.lazierdroid.util.Util;
 
 import com.j256.ormlite.android.apptools.OrmLiteBaseActivity;
-import com.turn.ttorrent.client.Client;
-import com.turn.ttorrent.client.SharedTorrent;
 
 public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 	protected static final String NOME = "nome";
@@ -167,8 +159,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		}
 	}
 
-	protected class LoadExternalImageTask extends
-			AsyncTask<Integer, Void, Void> {
+	protected class LoadExternalImageTask extends AsyncTask<Integer, Void, Void> {
 		Integer idSerie;
 		Integer idView;
 		Bitmap imagem;
@@ -205,127 +196,15 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		}
 	}
 
-	protected class DownloadTorrentTask extends AsyncTask<Episodio, Void, Void> {
-		private Exception exception = null;
-		private Episodio episodio = null;
-		
-		@Override
-		protected Void doInBackground(Episodio... params) {
-			try {
-				this.episodio = params[0];
-				
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-				
-				Boolean modoHD = prefs.getBoolean("config_video_hd", false);
-				String pastaTorrent = prefs.getString("config_torrent_folder", "");
-				String pastaTemp = prefs.getString("config_temp_folder", "");
-				
-				if(!pastaTorrent.substring(pastaTorrent.length() - 1).equals("/"))
-					pastaTorrent += "/";
-				
-				if(!pastaTemp.substring(pastaTemp.length() - 1).equals("/"))
-					pastaTemp += "/";
-				
-				TorrentFile torrent = TorrentService.buscaTorrent(episodio, modoHD, pastaTorrent);
-				
-				episodio.setLinkTorrent(torrent.getLink());
-				episodio.setCaminhoTorrent(torrent.getLocalFile().getCaminhoArquivo());
-				
-				getHelper().getEpisodioDao().update(episodio);
-				Client client = TTorrentService.startTorrent(episodio, pastaTorrent);
-
-				SharedTorrent sharedTorrent = client.getTorrent();
-				while(client.getState().ordinal() < 4 && sharedTorrent.getCompletion() < 100) {
-					Thread.sleep(10000);
-				}
-				sharedTorrent.stop();
-				
-				String nomeVideo = TorrentService.organizarArquivos(sharedTorrent, pastaTemp, pastaTorrent);
-				nomeVideo = TorrentService.corrigirNomeVideo(torrent, nomeVideo, pastaTemp);
-				
-				this.episodio.setNomeVideo(nomeVideo);
-				this.episodio.setCaminhoVideo(pastaTemp + nomeVideo);
-			} catch (Exception e) {
-				Log.e("Erro ao processar torrent.", e);
-				this.exception = e;
-			}
-
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			
-			try {
-				if(this.exception == null) {
-					getHelper().getEpisodioDao().update(this.episodio);
-				}
-			} catch (Exception e) {
-				this.exception = e;
-			}
-			
-			if(this.exception != null) {
-				Log.d("exception: " + this.exception);
-				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_baixar_torrent)).show();
-			}
-		}
-	}
-	
-	protected class DownloadLegendaTask extends AsyncTask<Episodio, Void, Void> {
-		private Exception exception = null;
-		private Episodio episodio = null;
-		
-		@Override
-		protected Void doInBackground(Episodio... params) {
-			try {
-				this.episodio = params[0];
-				
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-				String pastaTemp = prefs.getString("config_temp_folder", "");
-				String pastaFinal = prefs.getString("config_video_folder", "");
-				
-				if(!pastaTemp.substring(pastaTemp.length() - 1).equals("/"))
-					pastaTemp += "/";
-				
-				if(!pastaFinal.substring(pastaFinal.length() - 1).equals("/"))
-					pastaFinal += "/";
-				
-				LegendaFile legenda = LegendaService.buscaLegenda(episodio, pastaTemp);
-				
-				this.episodio.setLinkLegenda(legenda.getLink());
-				this.episodio.setCaminhoLegenda(legenda.getLocalFile().getCaminhoArquivo());
-				this.episodio.setNomeLegenda(legenda.getFileName());
-				
-				LegendaService.organizarArquivos(episodio, pastaFinal);
-				
-				getHelper().getEpisodioDao().update(this.episodio);
-			} catch (Exception e) {
-				Log.e("Erro ao processar torrent.", e);
-				this.exception = e;
-			}
-
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			
-			if(this.exception != null) {
-				Log.d("exception: " + this.exception);
-				Util.buildToast(getApplicationContext(), getString(R.string.msg_erro_baixar_torrent)).show();
-			}
-		}
-	}
-	
 	protected class TemporadasEpisodiosAdapter extends BaseExpandableListAdapter {
 		private final List<Temporada> temporadas;
 		private final LayoutInflater inflater;
+		private final Context context; 
 
 		public TemporadasEpisodiosAdapter(Context context, List<Temporada> _temporadas) {
 			this.inflater = LayoutInflater.from(context);
 			this.temporadas = _temporadas;
+			this.context = context;
 		}
 
 		@Override
@@ -341,6 +220,7 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 		@Override
 		public View getChildView(int posTemporada, int posEpisodio, boolean isLastChild, View convertView, ViewGroup parent) {
 			View v = convertView;
+			final Context context = this.context; 
 
 			if (v == null) {
 				v = inflater.inflate(R.layout.expandable_list_item_layout, parent, false);
@@ -375,11 +255,9 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 			
 			botaoBaixar.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
-					if(episodio.getStatusVideo().equals("OK")) {
-						new DownloadLegendaTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
-					} else {
-						new DownloadTorrentTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, episodio);
-					}
+					Intent serviceIntent = new Intent(context, DownloadVideoLegendaService.class);
+					serviceIntent.putExtra("episodio", episodio);
+					context.startService(serviceIntent);
 				}
 			});
 			
@@ -392,7 +270,6 @@ public abstract class BaseActivity extends OrmLiteBaseActivity<DatabaseHelper> {
 					} catch (Exception e) {
 						Log.e("Nao foi possivel abrir o arquivo de video.", e);
 					}
-				    
 				}
 			});
 			

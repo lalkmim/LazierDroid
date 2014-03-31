@@ -6,7 +6,9 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "temporadas")
-public class Temporada {
+public class Temporada extends LazierEntity {
+	private static final long serialVersionUID = 1L;
+
 	@DatabaseField(generatedId = true)
 	private int id;
 	

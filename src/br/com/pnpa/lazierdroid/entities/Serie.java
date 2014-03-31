@@ -6,7 +6,9 @@ import com.j256.ormlite.field.ForeignCollectionField;
 import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "series")
-public class Serie {
+public class Serie extends LazierEntity {
+	private static final long serialVersionUID = 1L;
+
 	@DatabaseField(id = true)
     private int id;
 	

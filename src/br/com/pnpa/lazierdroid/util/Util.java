@@ -39,4 +39,11 @@ public class Util {
 		
 		return link;
 	}
+	
+	public static String formatConfigFolder(String pasta) {
+		if(!pasta.substring(pasta.length() - 1).equals("/"))
+			pasta += "/";
+		
+		return pasta;
+	}
 }
